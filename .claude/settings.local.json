@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(git --version)",
+      "Read(//usr/local/bin/**)",
+      "Read(//opt/homebrew/**)",
+      "Read(//Users/tanishqa/.volta/**)",
+      "Read(//Users/tanishqa/**)",
+      "Bash(command -v brew)",
+      "Bash(brew --version)",
+      "Read(//usr/local/**)",
+      "Bash(command -v curl)",
+      "Bash(curl -sI --max-time 10 https://nodejs.org/dist/index.json)",
+      "Bash(curl -s --max-time 15 https://nodejs.org/dist/index.json)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); lts=[x for x in d if x['lts']]; print\\(lts[0]['version'], lts[0]['lts']\\)\")",
+      "Bash(node -p \"JSON.stringify\\(require\\('./tsconfig.json'\\).compilerOptions.paths\\)\")",
+      "Bash(rm -f \"Pagge 1\")",
+      "Bash(npm install *)"
+    ]
+  }
+}
