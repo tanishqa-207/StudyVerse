@@ -1,26 +1,174 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Twilight / deep-space palette to match the isometric reference */
+  --bg-0: #0a0e2a;
+  --bg-1: #141a45;
+  --sky-top: #5b62c9;
+  --sky-mid: #6f6fd6;
+  --sky-low: #8a86e0;
+
+  --panel: rgba(255, 255, 255, 0.08);
+  --panel-strong: rgba(255, 255, 255, 0.14);
+  --panel-border: rgba(255, 255, 255, 0.16);
+  --text: #f3f4ff;
+  --text-dim: rgba(233, 236, 255, 0.68);
+  --text-faint: rgba(233, 236, 255, 0.45);
+
+  --violet: #7c6cf5;
+  --violet-bright: #9a8bff;
+  --amber: #f5b74a;
+  --green: #48d38a;
+  --blue: #56b6f5;
+  --pink: #f472c9;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-0: var(--bg-0);
+  --color-panel: var(--panel);
+  --color-text: var(--text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--bg-0);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Reusable glass surface ---- */
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  box-shadow:
+    0 10px 40px -12px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.glass-strong {
+  background: var(--panel-strong);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  box-shadow:
+    0 20px 60px -18px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* thin custom scrollbar for progress column */
+.scroll-slim::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 99px;
+}
+
+/* ---- Animated traffic ---- */
+@keyframes drive-right {
+  from {
+    transform: translateX(-8vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+  to {
+    transform: translateX(70vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+@keyframes drive-left {
+  from {
+    transform: translateX(70vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+  to {
+    transform: translateX(-8vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+
+/* ---- Floating clouds ---- */
+@keyframes float-cloud {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(24px) translateY(-8px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* ---- Gentle location-card bob ---- */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* ---- Music equalizer bars ---- */
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* ---- Pulsing glow for the focus fountain / primary node ---- */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+/* ---- Slow rotate for the sidebar emblem ---- */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
