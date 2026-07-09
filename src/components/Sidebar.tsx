@@ -1,13 +1,49 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import Icon, { IconName } from "./Icon";
 import Emblem from "./Emblem";
-import { navItems } from "@/lib/demoData";
+import { navItems, type NavKey } from "@/lib/demoData";
+import { useUI, type View, type Modal } from "@/lib/uiStore";
+
+// Each nav item maps to a view + (optionally) a modal panel so every entry is
+// functional. "Study" opens the focus session; the rest open their panel.
+const NAV_MODAL: Record<NavKey, Modal> = {
+  home: null,
+  study: "focus",
+  rooms: "rooms",
+  quests: "quests",
+  "memory-forest": "memory-forest",
+  streak: "streak",
+};
+
+// Reverse map: which nav item a given open modal belongs to. Used to derive the
+// active highlight from the *current* modal so that dismissing a panel (e.g.
+// cancelling out of a Study Room) snaps the active tab back to Home — the
+// underlying route — instead of leaving a stale tab highlighted.
+const MODAL_NAV: Partial<Record<NonNullable<Modal>, NavKey>> = {
+  focus: "study",
+  rooms: "rooms",
+  quests: "quests",
+  "memory-forest": "memory-forest",
+  streak: "streak",
+};
 
 export default function Sidebar() {
-  const [active, setActive] = useState("home");
+  const setView = useUI((s) => s.setView);
+  const modal = useUI((s) => s.modal);
+  const openModal = useUI((s) => s.openModal);
+  const closeModal = useUI((s) => s.closeModal);
+
+  // The active tab always reflects reality: whatever panel is open, else Home.
+  const activeKey: NavKey = (modal && MODAL_NAV[modal]) || "home";
+
+  const handleNav = (key: NavKey) => {
+    setView(key as View);
+    const target = NAV_MODAL[key];
+    if (target) openModal(target);
+    else closeModal();
+  };
 
   return (
     <aside className="relative flex h-full w-[248px] shrink-0 flex-col bg-[#0b1030]/95 px-5 py-6">
@@ -25,11 +61,11 @@ export default function Sidebar() {
       {/* nav */}
       <nav className="flex flex-col gap-1.5">
         {navItems.map((item) => {
-          const isActive = item.key === active;
+          const isActive = item.key === activeKey;
           return (
             <button
               key={item.key}
-              onClick={() => setActive(item.key)}
+              onClick={() => handleNav(item.key)}
               className="relative flex items-center gap-3.5 rounded-2xl px-4 py-3 text-left transition-colors"
             >
               {isActive && (

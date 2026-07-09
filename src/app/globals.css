@@ -80,6 +80,34 @@ body {
   border-radius: 99px;
 }
 
+/* ---- Volume slider (music player) ---- */
+.vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+  cursor: pointer;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #9a8bff;
+  box-shadow: 0 0 0 3px rgba(124, 108, 245, 0.25);
+}
+.vol-slider::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: none;
+  border-radius: 50%;
+  background: #9a8bff;
+  box-shadow: 0 0 0 3px rgba(124, 108, 245, 0.25);
+}
+
 /* ---- Animated traffic ---- */
 @keyframes drive-right {
   from {
@@ -163,6 +191,60 @@ body {
   }
   50% {
     opacity: 1;
+  }
+}
+
+/* ---- Gentle tree / foliage sway ---- */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+/* ---- Assistant typing indicator ---- */
+@keyframes typing {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* ---- Ambient drifting particles ---- */
+@keyframes particle-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-120px) translateX(20px);
+    opacity: 0;
+  }
+}
+
+/* ---- Modal / onboarding entrance ---- */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 

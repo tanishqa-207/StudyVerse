@@ -3,12 +3,21 @@
 import { motion } from "framer-motion";
 import Icon, { IconName } from "./Icon";
 import type { MapLocation } from "@/lib/demoData";
+import { useUI, type Modal } from "@/lib/uiStore";
 
 const accentMap: Record<MapLocation["accent"], string> = {
   green: "#48d38a",
   blue: "#56b6f5",
   amber: "#f5b74a",
   violet: "#9a8bff",
+};
+
+// Map each location key to the modal it opens.
+const LOC_MODAL: Record<string, Modal> = {
+  "memory-forest": "memory-forest",
+  "study-room": "rooms",
+  "quest-hub": "quests",
+  "start-focus": "focus",
 };
 
 export default function LocationCard({
@@ -19,6 +28,8 @@ export default function LocationCard({
   index: number;
 }) {
   const accent = accentMap[loc.accent];
+  const openModal = useUI((s) => s.openModal);
+  const open = () => openModal(LOC_MODAL[loc.key] ?? null);
 
   if (loc.isPrimary) {
     return (
@@ -28,6 +39,7 @@ export default function LocationCard({
         transition={{ delay: 0.2 + index * 0.08 }}
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.97 }}
+        onClick={open}
         className="absolute z-20 -translate-x-1/2 -translate-y-1/2"
         style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
       >
@@ -56,6 +68,7 @@ export default function LocationCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 + index * 0.08 }}
       whileHover={{ scale: 1.04, y: -2 }}
+      onClick={open}
       className="glass-strong absolute z-20 flex -translate-x-1/2 -translate-y-1/2 items-center gap-3 rounded-2xl px-4 py-3"
       style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
     >
