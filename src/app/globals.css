@@ -1,0 +1,497 @@
+@import "tailwindcss";
+
+:root {
+  /* Twilight / deep-space palette to match the isometric reference */
+  --bg-0: #0a0b26;
+  --bg-1: #141142;
+  --sky-top: #5b62c9;
+  --sky-mid: #6f6fd6;
+  --sky-low: #8a86e0;
+
+  /* Glass surfaces — DARK frosted glass so panels stay legible while floating on
+     the bright twilight sky backdrop (see body / SkyBackdrop). */
+  --panel: rgba(24, 20, 58, 0.46);
+  --panel-strong: rgba(20, 17, 50, 0.58);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --text: #f5f5ff;
+  --text-dim: rgba(236, 238, 255, 0.74);
+  --text-faint: rgba(236, 238, 255, 0.5);
+
+  --violet: #7c6cf5;
+  --violet-bright: #9a8bff;
+  --violet-dark: #5a4be0;
+  --amber: #f5b74a;
+  --green: #48d38a;
+  --blue: #56b6f5;
+  --pink: #f472c9;
+
+  /* Sunset palette for premium neon aesthetic */
+  --sunset-orange: #ff9d66;
+  --sunset-magenta: #d166ff;
+  --sunset-warm: #ffb88c;
+
+  /* Neon glow tokens — reused by .neon-* utilities and inline shadows. */
+  --glow-violet: rgba(124, 108, 245, 0.55);
+  --glow-blue: rgba(86, 182, 245, 0.5);
+  --glow-orange: rgba(255, 157, 102, 0.48);
+  --radius-lg: 28px;
+}
+
+@theme inline {
+  --color-bg-0: var(--bg-0);
+  --color-panel: var(--panel);
+  --color-text: var(--text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  color: var(--text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  /* Cinematic purple → warm-orange sky (matches the reference): deep-indigo
+     crown, a warm sunset bloom low-left behind the city, magenta haze upper-
+     right, and a soft purple fog pocket along the bottom. The whole app floats
+     on this; SkyBackdrop layers volumetric clouds + fog on top. */
+  background:
+    radial-gradient(58% 52% at 26% 50%, rgba(255, 148, 78, 0.5), transparent 62%),
+    radial-gradient(30% 26% at 22% 44%, rgba(255, 196, 130, 0.4), transparent 60%),
+    radial-gradient(42% 42% at 76% 22%, rgba(236, 126, 210, 0.34), transparent 66%),
+    radial-gradient(78% 56% at 50% 102%, rgba(158, 104, 214, 0.42), transparent 72%),
+    linear-gradient(
+      180deg,
+      #161038 0%,
+      #221751 18%,
+      #3a2772 40%,
+      #6a3d93 60%,
+      #97539b 78%,
+      #b8748e 100%
+    );
+  background-attachment: fixed;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---- Reusable glass surface — premium "Vision Pro" glassmorphism ----
+   A frosted panel + a diagonal top-left sheen + a fine inner top highlight and
+   a darker inner base, giving real depth without any extra DOM. */
+.glass {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0) 46%),
+    var(--panel);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow:
+    0 14px 48px -14px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 0 26px -18px rgba(154, 139, 255, 0.5),
+    inset 0 -18px 40px -28px rgba(0, 0, 0, 0.62);
+}
+
+.glass-strong {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.02) 40%, rgba(255, 255, 255, 0) 60%),
+    var(--panel-strong);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(34px) saturate(175%);
+  -webkit-backdrop-filter: blur(34px) saturate(175%);
+  box-shadow:
+    0 28px 74px -20px rgba(0, 0, 0, 0.64),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    inset 0 0 34px -20px rgba(154, 139, 255, 0.55),
+    inset 0 -22px 48px -30px rgba(0, 0, 0, 0.68);
+}
+
+/* Premium volumetric cloud — a lumpy cumulus silhouette with a lit top, a
+   shaded underside and a soft cast shadow for real depth (no flat blurry
+   circles). Each puff is a realistic shaded sphere with sunset lighting. */
+.vcloud {
+  position: relative;
+  width: 220px;
+  height: 130px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+.vcloud .puff {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    120% 120% at 34% 22%,
+    #ffffff 0%,
+    var(--cloud-tint, #f4eeff) 28%,
+    #d4c6f0 56%,
+    rgba(200, 180, 230, 0) 82%
+  );
+  filter: blur(1.5px);
+  box-shadow:
+    inset -2px -2px 6px rgba(80, 60, 140, 0.3),
+    inset 1px 1px 3px rgba(255, 255, 255, 0.4);
+}
+.vcloud .puff-base {
+  background: radial-gradient(
+    64% 128% at 50% 20%,
+    #f5eeff 0%,
+    var(--cloud-tint, #f4eeff) 34%,
+    #d9caf0 58%,
+    rgba(200, 190, 240, 0) 78%
+  );
+  box-shadow: inset 0 -3px 8px rgba(60, 40, 120, 0.25);
+}
+.vcloud .puff-shadow {
+  border-radius: 50%;
+  background: radial-gradient(
+    55% 110% at 50% 0%,
+    rgba(50, 30, 100, 0.58),
+    rgba(50, 30, 100, 0.2) 68%,
+    rgba(50, 30, 100, 0) 85%
+  );
+  filter: blur(8px);
+}
+
+/* ---- Neon glow helpers (GPU-cheap box-shadow rings) ---- */
+.neon-violet {
+  box-shadow:
+    0 0 0 1px rgba(154, 139, 255, 0.35),
+    0 0 22px -2px var(--glow-violet),
+    0 18px 50px -18px rgba(0, 0, 0, 0.7);
+}
+.neon-blue {
+  box-shadow:
+    0 0 0 1px rgba(86, 182, 245, 0.35),
+    0 0 22px -2px var(--glow-blue),
+    0 18px 50px -18px rgba(0, 0, 0, 0.7);
+}
+.neon-orange {
+  box-shadow:
+    0 0 0 1px rgba(255, 157, 102, 0.35),
+    0 0 22px -2px var(--glow-orange),
+    0 18px 50px -18px rgba(0, 0, 0, 0.7);
+}
+
+/* ---- Holographic neon billboard (the four city sections) ----
+   A colour-tinted glass screen with a bright neon rim + outer bloom. The accent
+   colour is supplied per-instance via the --neon custom property. */
+.billboard {
+  position: relative;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--neon) 28%, transparent), rgba(14, 12, 40, 0.46) 58%),
+    rgba(10, 8, 32, 0.52);
+  border: 1.8px solid color-mix(in srgb, var(--neon) 82%, white 12%);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--neon) 48%, transparent),
+    0 0 28px -1px var(--neon),
+    0 0 56px -6px var(--neon),
+    0 0 84px -14px var(--neon),
+    0 28px 60px -16px rgba(0, 0, 0, 0.76),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 32px -8px color-mix(in srgb, var(--neon) 64%, transparent);
+}
+/* enhanced inner screen bezel for premium holographic look with double-rim effect */
+.billboard::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: inherit;
+  border: 1.2px solid color-mix(in srgb, var(--neon) 52%, rgba(255, 255, 255, 0.1));
+  pointer-events: none;
+  box-shadow: inset 0 0 12px -2px color-mix(in srgb, var(--neon) 40%, transparent);
+}
+
+/* Smooth, GPU-accelerated hover lift shared across interactive cards. */
+.hover-lift {
+  transition:
+    transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.32s ease;
+  will-change: transform;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+/* thin custom scrollbar for progress column */
+.scroll-slim::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 99px;
+}
+
+/* ---- Volume slider (music player) ---- */
+.vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+  cursor: pointer;
+}
+.vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #9a8bff;
+  box-shadow: 0 0 0 3px rgba(124, 108, 245, 0.25);
+}
+.vol-slider::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: none;
+  border-radius: 50%;
+  background: #9a8bff;
+  box-shadow: 0 0 0 3px rgba(124, 108, 245, 0.25);
+}
+
+/* ---- Animated traffic ---- */
+@keyframes drive-right {
+  from {
+    transform: translateX(-8vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+  to {
+    transform: translateX(70vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+@keyframes drive-left {
+  from {
+    transform: translateX(70vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+  to {
+    transform: translateX(-8vw) translateY(0) rotate(var(--rot, 0deg));
+  }
+}
+
+/* ---- Floating clouds — a very gentle vertical breathe only. No large
+   horizontal drift, so the composition stays stable (no "sliding" feel). ---- */
+@keyframes float-cloud {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -5px, 0);
+  }
+}
+
+/* ---- Volumetric purple fog — slow horizontal drift + gentle breathe ---- */
+@keyframes fog-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate3d(0, -1.5%, 0) scale(1.04);
+    opacity: 0.8;
+  }
+}
+
+/* ---- Soft neon breathing for glowing edges ---- */
+@keyframes neon-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- Gentle location-card bob ---- */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* ---- Music equalizer bars ---- */
+@keyframes eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* ---- Pulsing glow for the focus fountain / primary node ---- */
+@keyframes pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+/* ---- Slow rotate for the sidebar emblem ---- */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---- Gentle tree / foliage sway ---- */
+@keyframes sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+/* ---- Assistant typing indicator ---- */
+@keyframes typing {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* ---- Ambient drifting particles ---- */
+@keyframes particle-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-120px) translateX(20px);
+    opacity: 0;
+  }
+}
+
+/* ---- Modal / onboarding entrance ---- */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ---- Staggered card entrance ---- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---- Notes editor (Memory Forest) ---- */
+/* Tailwind's preflight strips heading/list styling; the contentEditable
+   surface renders raw HTML, so restore sensible typography scoped to it. */
+.notes-editor h1,
+.notes-editor h2,
+.notes-editor h3 {
+  font-weight: 700;
+  color: #fff;
+  margin: 0.6em 0 0.35em;
+  line-height: 1.25;
+}
+.notes-editor h1 {
+  font-size: 1.5em;
+}
+.notes-editor h2 {
+  font-size: 1.3em;
+}
+.notes-editor h3 {
+  font-size: 1.12em;
+}
+.notes-editor p {
+  margin: 0.4em 0;
+}
+.notes-editor ul,
+.notes-editor ol {
+  margin: 0.4em 0;
+  padding-left: 1.4em;
+}
+.notes-editor ul {
+  list-style: disc;
+}
+.notes-editor ol {
+  list-style: decimal;
+}
+.notes-editor li {
+  margin: 0.15em 0;
+}
+.notes-editor a {
+  color: var(--violet-bright);
+  text-decoration: underline;
+}
+.notes-editor hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  margin: 0.8em 0;
+}
+.notes-editor:empty::before {
+  content: "Start writing…";
+  color: var(--text-faint);
+}
