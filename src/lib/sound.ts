@@ -11,6 +11,7 @@ export function playClick() {
   if (profile && !profile.preferences.soundOn) return;
 
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
     
@@ -37,7 +38,7 @@ export function playClick() {
     
     osc.start();
     osc.stop(audioCtx.currentTime + 0.05);
-  } catch (e) {
+  } catch {
     // Gracefully handle if audio is blocked or unsupported
   }
 }
