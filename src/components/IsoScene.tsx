@@ -158,10 +158,11 @@ interface BuildingProps {
 
 function Building({ x, y, w, d, h, palette, tiers = 1, roof = "none", neon }: BuildingProps) {
   const parts: React.ReactNode[] = [];
+  const shadow: React.ReactNode[] = [];
   const [sx, sy] = proj(x + w / 2, y + d / 2, 0);
-  // Ground contact shadow + a soft neon-tinted glow pooling under the tower
-  // (reads as a reflection / light spill on the wet plaza).
-  parts.push(
+  
+  // Ground contact shadow stays on the ground.
+  shadow.push(
     <g key="shadow">
       {neon && (
         <ellipse
@@ -276,7 +277,25 @@ function Building({ x, y, w, d, h, palette, tiers = 1, roof = "none", neon }: Bu
     );
   }
 
-  return <g>{parts}</g>;
+  const amp = 8 + hash(x, y) * 8; // 8 to 16px float amplitude
+  const dur = 4 + hash(y, x) * 3; // 4s to 7s duration
+  const delay = hash(x + y, x * y) * -8; // staggered start
+  
+  return (
+    <g>
+      {shadow}
+      <g
+        style={
+          {
+            animation: `floatBuilding ${dur}s ease-in-out ${delay}s infinite`,
+            "--float-amp": `-${amp}px`,
+          } as React.CSSProperties
+        }
+      >
+        {parts}
+      </g>
+    </g>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -638,6 +657,14 @@ export default function IsoScene() {
         <filter id="soft-rim" x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation="26" />
         </filter>
+        <style>
+          {`
+            @keyframes floatBuilding {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(var(--float-amp, -10px)); }
+            }
+          `}
+        </style>
       </defs>
 
       {/* cloud bed behind the whole city */}

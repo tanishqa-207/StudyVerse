@@ -11,6 +11,7 @@ import FocusSessionModal from "./FocusSessionModal";
 import LocationModals from "./LocationModals";
 import MemoryForestPremium from "./MemoryForestPremium";
 import AssistantPanel from "./AssistantPanel";
+import FloatingTimer from "./FloatingTimer";
 import Cloud from "./Cloud";
 import { useStore, useHasProfile, useProgress } from "@/lib/store";
 import { useUI } from "@/lib/uiStore";
@@ -95,6 +96,7 @@ export default function AppShell() {
       <LocationModals />
       <MemoryForestPremium />
       <AssistantPanel />
+      <FloatingTimer />
       <Toast />
     </div>
   );

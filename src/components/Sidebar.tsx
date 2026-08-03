@@ -18,6 +18,8 @@ const NAV_MODAL: Record<NavKey, Modal> = {
   quests: "quests",
   "memory-forest": "memory-forest",
   streak: "streak",
+  calendar: "calendar",
+  analytics: "analytics",
 };
 
 // Reverse map: which nav item a given open modal belongs to. Used to derive the
@@ -29,7 +31,10 @@ const MODAL_NAV: Partial<Record<NonNullable<Modal>, NavKey>> = {
   rooms: "rooms",
   quests: "quests",
   "memory-forest": "memory-forest",
+  "memory-forest-premium": "memory-forest",
   streak: "streak",
+  calendar: "calendar",
+  analytics: "analytics",
 };
 
 export default function Sidebar() {

@@ -12,7 +12,9 @@ export type View =
   | "rooms"
   | "quests"
   | "memory-forest"
-  | "streak";
+  | "streak"
+  | "calendar"
+  | "analytics";
 
 export type Modal =
   | null
@@ -23,7 +25,10 @@ export type Modal =
   | "memory-forest-premium"
   | "streak"
   | "profile"
-  | "shop";
+  | "shop"
+  | "calendar"
+  | "analytics"
+  | "timetable";
 
 interface UIState {
   view: View;

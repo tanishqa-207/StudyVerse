@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Icon from "./Icon";
 import { useMusic, TRACKS } from "@/lib/musicStore";
 import { playClick } from "@/lib/sound";
 import { useUI } from "@/lib/uiStore";
 
-// Bottom-left focus-music player (see reference). Glass surface, animated
-// equalizer, and fully working transport + volume. Playback is synthesised in
-// the browser (see musicStore) so every control is genuinely audible with no
-// network dependency. Lives at the bottom of the left column.
+function formatTime(sec: number) {
+  if (!sec || isNaN(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function MusicPlayer({ className = "" }: { className?: string }) {
   const {
-    trackIndex,
+    trackId,
     playing,
     volume,
     muted,
+    shuffle,
+    repeat,
+    currentTime,
+    duration,
+    localTracks,
     hydrate,
     toggle,
     next,
@@ -24,25 +32,45 @@ export default function MusicPlayer({ className = "" }: { className?: string }) 
     selectTrack,
     setVolume,
     toggleMute,
+    toggleShuffle,
+    toggleRepeat,
+    seek,
+    addLocalTrack,
+    removeLocalTrack,
   } = useMusic();
+  
   const showToast = useUI((s) => s.showToast);
   const [listOpen, setListOpen] = useState(false);
-  const cur = TRACKS[trackIndex];
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const allTracks = [...TRACKS, ...localTracks];
+  const cur = allTracks.find(t => t.id === trackId) || TRACKS[0];
 
-  // Load persisted track/volume once; playback stays paused until a user gesture
-  // (browser autoplay policy), then persists across the whole app session.
   useEffect(() => {
     hydrate();
   }, [hydrate]);
 
-  const pickTrack = (i: number) => {
-    const ok = selectTrack(i);
-    if (!ok) showToast(`“${TRACKS[i].title}” is a premium track 🔒`);
+  const pickTrack = (id: string) => {
+    const ok = selectTrack(id);
+    const track = allTracks.find(t => t.id === id);
+    if (!ok && track) showToast(`“${track.title}” is a premium track 🔒`);
     else setListOpen(false);
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    const file = e.target.files[0];
+    if (file.type.startsWith("audio/")) {
+      await addLocalTrack(file);
+      showToast(`Added ${file.name}`);
+    } else {
+      showToast("Please select an audio file");
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
-    <div className={`glass-strong relative rounded-[24px] p-3.5 ${className}`}>
+    <div className={`glass-strong relative flex flex-col rounded-[24px] p-3.5 ${className}`}>
       {/* top row: album art + track meta + equalizer */}
       <div className="flex items-center gap-2.5">
         <button
@@ -98,6 +126,22 @@ export default function MusicPlayer({ className = "" }: { className?: string }) 
           ))}
         </div>
       </div>
+      
+      {/* progress bar (only active for local tracks, else hidden or zeroed) */}
+      {cur.isLocal && (
+        <div className="mt-3 flex items-center gap-2 text-[10px] text-[var(--text-faint)] font-medium">
+          <span>{formatTime(currentTime)}</span>
+          <input 
+            type="range" 
+            min={0} 
+            max={duration || 100} 
+            value={currentTime} 
+            onChange={(e) => seek(parseFloat(e.target.value))}
+            className="vol-slider flex-1" 
+          />
+          <span>{formatTime(duration)}</span>
+        </div>
+      )}
 
       {/* bottom row: transport + volume */}
       <div className="mt-3 flex items-center gap-2">
@@ -126,6 +170,22 @@ export default function MusicPlayer({ className = "" }: { className?: string }) 
         >
           <Icon name="skip-forward" size={17} />
         </button>
+        
+        {/* Shuffle & Repeat */}
+        <button
+          onClick={toggleShuffle}
+          aria-label="Shuffle"
+          className={`grid h-8 w-8 place-items-center rounded-full transition ${shuffle ? 'text-white bg-white/10' : 'text-[var(--text-dim)] hover:text-white hover:bg-white/5'}`}
+        >
+          <Icon name="shuffle" size={14} />
+        </button>
+        <button
+          onClick={toggleRepeat}
+          aria-label="Repeat"
+          className={`grid h-8 w-8 place-items-center rounded-full transition ${repeat ? 'text-white bg-white/10' : 'text-[var(--text-dim)] hover:text-white hover:bg-white/5'}`}
+        >
+          <Icon name="repeat" size={14} />
+        </button>
 
         <div className="ml-auto flex min-w-0 items-center gap-2">
           <button
@@ -143,7 +203,7 @@ export default function MusicPlayer({ className = "" }: { className?: string }) 
             value={muted ? 0 : volume}
             onChange={(e) => setVolume(parseFloat(e.target.value))}
             aria-label="Volume"
-            className="vol-slider w-full max-w-[92px]"
+            className="vol-slider w-full max-w-[70px]"
           />
         </div>
       </div>
@@ -167,51 +227,84 @@ export default function MusicPlayer({ className = "" }: { className?: string }) 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="glass-strong absolute bottom-[calc(100%+10px)] left-0 z-50 w-full rounded-3xl p-3"
+              className="glass-strong absolute bottom-[calc(100%+10px)] left-0 z-50 w-full rounded-3xl p-3 max-h-[400px] flex flex-col"
             >
-              <div className="mb-2 flex items-center gap-2 px-2 text-[13px] font-semibold text-[var(--text-dim)]">
-                <Icon name="music" size={16} /> Focus Playlist
+              <div className="mb-2 flex items-center justify-between px-2">
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-[var(--text-dim)]">
+                  <Icon name="music" size={16} /> Playlist
+                </div>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-white/20"
+                >
+                  <Icon name="plus" size={12} /> Local Song
+                </button>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
               </div>
-              <div className="flex flex-col gap-1">
-                {TRACKS.map((t, i) => {
-                  const active = i === trackIndex;
+              
+              <div className="flex-1 overflow-y-auto flex flex-col gap-1 pr-1 custom-scroll">
+                {allTracks.map((t) => {
+                  const active = t.id === trackId;
                   return (
-                    <button
+                    <div 
                       key={t.id}
-                      onClick={() => pickTrack(i)}
                       className="group flex items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition hover:bg-white/10"
                       style={active ? { background: "rgba(124,108,245,0.22)" } : undefined}
                     >
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#3a2f6e] to-[#1a1440] text-[17px] transition group-hover:scale-105">
-                        <span style={{
-                          display: "inline-block",
-                          animation: active && playing ? "spin 4s linear infinite" : "none",
-                          transformOrigin: "center",
-                        }}>
-                          {t.emoji}
+                      <button
+                        onClick={() => pickTrack(t.id)}
+                        className="flex items-center gap-3 min-w-0 flex-1 text-left"
+                      >
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#3a2f6e] to-[#1a1440] text-[17px] transition group-hover:scale-105">
+                          <span style={{
+                            display: "inline-block",
+                            animation: active && playing ? "spin 4s linear infinite" : "none",
+                            transformOrigin: "center",
+                          }}>
+                            {t.emoji}
+                          </span>
                         </span>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 truncate text-[13.5px] font-semibold">
-                          <span className="truncate">{t.title}</span>
-                          {t.premium && (
-                            <span className="rounded-full bg-[var(--amber)]/20 px-1.5 py-0.5 text-[9px] font-bold text-[var(--amber)] shrink-0">
-                              PRO
-                            </span>
-                          )}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 truncate text-[13.5px] font-semibold">
+                            <span className="truncate">{t.title}</span>
+                            {t.premium && (
+                              <span className="rounded-full bg-[var(--amber)]/20 px-1.5 py-0.5 text-[9px] font-bold text-[var(--amber)] shrink-0">
+                                PRO
+                              </span>
+                            )}
+                          </div>
+                          <div className="truncate text-[11.5px] text-[var(--text-faint)]">
+                            {t.subtitle}
+                          </div>
                         </div>
-                        <div className="truncate text-[11.5px] text-[var(--text-faint)]">
-                          {t.subtitle}
-                        </div>
-                      </div>
-                      {t.premium ? (
-                        <Icon name="lock" size={16} className="shrink-0 text-[var(--text-faint)] group-hover:text-[var(--text-dim)] transition-colors" />
-                      ) : active && playing ? (
-                        <Icon name="pause" size={16} className="shrink-0 text-[var(--violet-bright)]" />
-                      ) : (
-                        <Icon name="play" size={16} className="shrink-0 text-[var(--text-dim)] group-hover:text-white transition-colors" />
+                        {t.premium ? (
+                          <Icon name="lock" size={16} className="shrink-0 text-[var(--text-faint)] group-hover:text-[var(--text-dim)] transition-colors mr-2" />
+                        ) : active && playing ? (
+                          <Icon name="pause" size={16} className="shrink-0 text-[var(--violet-bright)] mr-2" />
+                        ) : (
+                          <Icon name="play" size={16} className="shrink-0 text-[var(--text-dim)] group-hover:text-white transition-colors mr-2" />
+                        )}
+                      </button>
+                      
+                      {t.isLocal && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeLocalTrack(t.id);
+                          }}
+                          className="shrink-0 grid place-items-center h-8 w-8 rounded-full text-[var(--text-faint)] hover:text-white hover:bg-white/10 transition"
+                          aria-label="Remove local track"
+                        >
+                          <Icon name="trash" size={14} />
+                        </button>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

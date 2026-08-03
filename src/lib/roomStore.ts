@@ -206,9 +206,13 @@ export const useRoom = create<RoomState>((set, get) => {
 });
 
 function errMessage(e: unknown, fallback: string): string {
+  console.error("Room operation failed:", e);
   if (e instanceof Error && e.message) {
     if (/not configured/i.test(e.message)) return fallback;
     return e.message;
+  }
+  if (e && typeof e === "object" && "message" in e && typeof (e as Record<string, unknown>).message === "string") {
+    return (e as Record<string, unknown>).message as string;
   }
   return fallback;
 }

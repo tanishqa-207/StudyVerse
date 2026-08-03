@@ -10,6 +10,7 @@ import { useActiveProfile } from "@/lib/store";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import VoiceRecorder from "./VoiceRecorder";
 import AudioPlayer from "./AudioPlayer";
+import { useTimer } from "@/lib/timerStore";
 
 const DURATIONS = [15, 25, 50];
 
@@ -40,9 +41,13 @@ export default function StudyRoom() {
 function Lobby() {
   const { createRoom, joinByCode, status, error, prefillCode, setPrefillCode, transportKind } =
     useRoom();
+  const targetEndTime = useTimer((s) => s.targetEndTime);
+  const stopTimer = useTimer((s) => s.stopTimer);
+
   const [name, setName] = useState("");
   const [duration, setDuration] = useState(25);
   const [code, setCode] = useState("");
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const busy = status === "busy";
 
   // Prefill the join code from an invite link (?join=CODE).
@@ -52,6 +57,54 @@ function Lobby() {
       setPrefillCode(null);
     }
   }, [prefillCode, setPrefillCode]);
+
+  const handleCreate = () => {
+    if (targetEndTime) {
+      setPendingAction(() => () => createRoom(name, duration));
+    } else {
+      createRoom(name, duration);
+    }
+  };
+
+  const handleJoin = (c: string) => {
+    if (targetEndTime) {
+      setPendingAction(() => () => joinByCode(c));
+    } else {
+      joinByCode(c);
+    }
+  };
+
+  if (pendingAction) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 text-center gap-6 min-h-[300px]">
+        <div className="grid h-16 w-16 place-items-center rounded-full bg-[var(--violet-bright)]/20 mb-2">
+          <Icon name="clock" size={28} className="text-[var(--violet-bright)]" />
+        </div>
+        <p className="text-[15px] text-[var(--text-dim)] leading-relaxed px-4">
+          You already have an active Individual Study Session. Do you want to end it and enter the Study Room?
+        </p>
+        <div className="flex w-full gap-3 mt-4">
+          <button
+            onClick={() => {
+              stopTimer();
+              pendingAction();
+              setPendingAction(null);
+            }}
+            className="flex-1 rounded-2xl px-5 py-3.5 text-[14px] font-semibold text-white transition hover:brightness-110"
+            style={{ background: "linear-gradient(135deg, #8a7bf0, #6355e6)" }}
+          >
+            End Session & Enter
+          </button>
+          <button
+            onClick={() => setPendingAction(null)}
+            className="flex-1 rounded-2xl bg-white/8 px-5 py-3.5 text-[14px] font-semibold text-[var(--text-dim)] transition hover:text-white hover:bg-white/10"
+          >
+            Stay in Current
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -84,7 +137,7 @@ function Lobby() {
           ))}
         </div>
         <button
-          onClick={() => createRoom(name, duration)}
+          onClick={handleCreate}
           disabled={busy}
           className="w-full rounded-xl px-5 py-3 text-[14px] font-semibold text-white transition disabled:opacity-50"
           style={{ background: "linear-gradient(135deg,#8a7bf0,#6355e6)" }}
@@ -103,12 +156,12 @@ function Lobby() {
             value={code}
             maxLength={8}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            onKeyDown={(e) => e.key === "Enter" && joinByCode(code)}
+            onKeyDown={(e) => e.key === "Enter" && handleJoin(code)}
             placeholder="ROOM CODE"
             className="w-full rounded-xl bg-white/8 px-4 py-2.5 text-[15px] font-semibold uppercase tracking-widest text-white placeholder:text-[var(--text-faint)] placeholder:tracking-normal focus:outline-none"
           />
           <button
-            onClick={() => joinByCode(code)}
+            onClick={() => handleJoin(code)}
             disabled={busy || code.trim().length < 4}
             className="shrink-0 rounded-xl px-5 py-2.5 text-[14px] font-semibold text-white transition disabled:opacity-50"
             style={{ background: "linear-gradient(135deg,#56b6f5,#3f8ce0)" }}

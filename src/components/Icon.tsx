@@ -50,6 +50,13 @@ export type IconName =
   | "layout"
   | "mic"
   | "mic-off";
+  | "calendar"
+  | "bar-chart"
+  | "chevron-left"
+  | "shuffle"
+  | "repeat"
+  | "image"
+  | "map-pin";
 
 const paths: Record<IconName, React.ReactNode> = {
   home: <path d="M3 10.5 12 3l9 7.5M5 9.5V21h5v-6h4v6h5V9.5" />,
@@ -271,21 +278,61 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M3 9h18M9 9v12" />
     </>
   ),
-  mic: (
-    <>
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="22" />
-    </>
-  ),
-  "mic-off": (
-    <>
-      <line x1="2" y1="2" x2="22" y2="22" />
-      <path d="M18.89 13.23A7.12 7.12 0 0 1 19 12v-2" />
-      <path d="M5 10v2a7 7 0 0 0 10.88 5.88" />
-      <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
-      <path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
-      <line x1="12" y1="19" x2="12" y2="22" />
+mic: (
+  <>
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+    <line x1="12" y1="19" x2="12" y2="22" />
+  </>
+),
+"mic-off": (
+  <>
+    <line x1="2" y1="2" x2="22" y2="22" />
+    <path d="M18.89 13.23A7.12 7.12 0 0 1 19 12v-2" />
+    <path d="M5 10v2a7 7 0 0 0 10.88 5.88" />
+    <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33" />
+    <path d="M9 9v3a3 3 0 0 0 5.12 2.12" />
+    <line x1="12" y1="19" x2="12" y2="22" />
+  </>
+),
+
+calendar: (
+  <>
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </>
+),
+"bar-chart": (
+  <>
+    <path d="M12 20V10M18 20V4M6 20v-4" />
+  </>
+),
+"chevron-left": <path d="m15 19-7-7 7-7" />,
+shuffle: (
+  <>
+    <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5" />
+  </>
+),
+repeat: (
+  <>
+    <path d="M17 1l4 4-4 4" />
+    <path d="M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4" />
+    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+  </>
+),
+image: (
+  <>
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <path d="M21 15l-5-5L5 21" />
+  </>
+),
+"map-pin": (
+  <>
+    <path d="M21 10c0 7-9 13-9 13-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </>
+),
     </>
   ),
 };
