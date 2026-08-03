@@ -35,7 +35,7 @@ export function getSupabase(): SupabaseClient | null {
     client = createClient(url as string, anonKey as string, {
       auth: { persistSession: false },
       realtime: { params: { eventsPerSecond: 10 } },
-      global: { fetch: fetch.bind(globalThis) },
+      global: { fetch: (...args) => fetch(...args) },
     });
   }
   return client;
