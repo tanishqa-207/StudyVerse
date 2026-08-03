@@ -49,7 +49,7 @@ export type IconName =
   | "underline"
   | "layout"
   | "mic"
-  | "mic-off";
+  | "mic-off"
   | "calendar"
   | "bar-chart"
   | "chevron-left"
@@ -333,8 +333,6 @@ image: (
     <circle cx="12" cy="10" r="3" />
   </>
 ),
-    </>
-  ),
 };
 
 interface IconProps extends SVGProps<SVGSVGElement> {
