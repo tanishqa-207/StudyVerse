@@ -265,10 +265,10 @@ export const useStore = create<AppState>((set, get) => ({
     const profiles = get().profiles.map((p) =>
       p.id === id
         ? {
-            ...p,
-            username: patch.username?.trim() ? patch.username.trim() : p.username,
-            avatarId: patch.avatarId ?? p.avatarId,
-          }
+          ...p,
+          username: patch.username?.trim() ? patch.username.trim() : p.username,
+          avatarId: patch.avatarId ?? p.avatarId,
+        }
         : p,
     );
     persist(profiles, get().activeId);
@@ -358,12 +358,12 @@ export const useStore = create<AppState>((set, get) => ({
       const profiles = s.profiles.map((p) =>
         p.id === s.activeId
           ? {
-              ...p,
-              timetable: {
-                ...(p.timetable || {}),
-                [date]: currentEntries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
-              },
-            }
+            ...p,
+            timetable: {
+              ...(p.timetable || {}),
+              [date]: currentEntries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+            },
+          }
           : p,
       );
       persist(profiles, s.activeId);
@@ -379,12 +379,12 @@ export const useStore = create<AppState>((set, get) => ({
       const profiles = s.profiles.map((p) =>
         p.id === s.activeId
           ? {
-              ...p,
-              timetable: {
-                ...(p.timetable || {}),
-                [date]: currentEntries.filter((e) => e.id !== id),
-              },
-            }
+            ...p,
+            timetable: {
+              ...(p.timetable || {}),
+              [date]: currentEntries.filter((e) => e.id !== id),
+            },
+          }
           : p,
       );
       persist(profiles, s.activeId);
@@ -443,7 +443,7 @@ export const useStore = create<AppState>((set, get) => ({
 
 // ---- convenience selectors (stable references) ----
 const activeOf = (s: AppState) => s.profiles.find((p) => p.id === s.activeId);
-const EMPTY_OBJ: Record<string, any[]> = {};
+const EMPTY_OBJ: Record<string, TimetableEntry[]> = {};
 
 export const useActiveProfile = () => useStore((s) => activeOf(s) ?? null);
 export const useProgress = () => useStore((s) => activeOf(s)?.progress ?? defaultProgress);
