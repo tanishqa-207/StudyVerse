@@ -32,7 +32,7 @@ export default function Modal({
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 grid place-items-center p-4"
+          className="fixed inset-0 z-50 grid place-items-center p-2.5 sm:p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -49,7 +49,7 @@ export default function Modal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 280, damping: 26 }}
-            className="glass-strong relative z-10 max-h-[86vh] overflow-y-auto rounded-[28px] p-6 scroll-slim"
+            className="glass-strong relative z-10 max-h-[88vh] sm:max-h-[86vh] max-w-[calc(100vw-1.25rem)] overflow-y-auto rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 scroll-slim"
             style={{ width: "100%", maxWidth: width }}
           >
             <div className="mb-5 flex items-start justify-between gap-4">

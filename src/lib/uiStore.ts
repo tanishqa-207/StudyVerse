@@ -34,20 +34,26 @@ interface UIState {
   view: View;
   modal: Modal;
   toast: string | null;
+  sidebarOpen: boolean;
   setView: (v: View) => void;
   openModal: (m: Modal) => void;
   closeModal: () => void;
   showToast: (t: string) => void;
   clearToast: () => void;
+  toggleSidebar: () => void;
+  closeSidebar: () => void;
 }
 
 export const useUI = create<UIState>((set) => ({
   view: "home",
   modal: null,
   toast: null,
-  setView: (view) => set({ view }),
-  openModal: (modal) => set({ modal }),
+  sidebarOpen: false,
+  setView: (view) => set({ view, sidebarOpen: false }),
+  openModal: (modal) => set({ modal, sidebarOpen: false }),
   closeModal: () => set({ modal: null }),
   showToast: (toast) => set({ toast }),
   clearToast: () => set({ toast: null }),
+  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  closeSidebar: () => set({ sidebarOpen: false }),
 }));

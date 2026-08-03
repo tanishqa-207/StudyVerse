@@ -541,13 +541,13 @@ function Chat() {
           className="mt-2"
         />
       ) : (
-        <div className="mt-2 flex items-center gap-2">
+        <div className="mt-2 flex items-center gap-1.5 sm:gap-2">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder={isListening ? "Listening… speak now" : "Message…"}
-            className={`w-full rounded-xl bg-white/8 px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none ${
+            className={`min-w-0 flex-1 rounded-xl bg-white/8 px-3 sm:px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none ${
               isListening ? "ring-2 ring-red-500/70" : ""
             }`}
           />
@@ -564,7 +564,7 @@ function Chat() {
                 : "Voice input"
             }
             aria-label={isListening ? "Stop voice input" : "Start voice input"}
-            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
+            className={`grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
               isListening
                 ? "animate-pulse bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]"
                 : "bg-white/8 text-[var(--text-dim)] hover:bg-white/15 hover:text-white"
@@ -578,7 +578,7 @@ function Chat() {
             onClick={() => setShowVoiceRecorder(true)}
             title="Record Voice Note"
             aria-label="Record Voice Note"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/8 text-[var(--violet-bright,#8a7bf0)] transition hover:bg-white/15 hover:text-white"
+            className="grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl bg-white/8 text-[var(--violet-bright,#8a7bf0)] transition hover:bg-white/15 hover:text-white"
           >
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
@@ -590,7 +590,7 @@ function Chat() {
             onClick={submit}
             disabled={!text.trim()}
             aria-label="Send message"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white transition disabled:opacity-40"
+            className="grid h-9 w-9 sm:h-10 sm:w-10 shrink-0 place-items-center rounded-xl text-white transition disabled:opacity-40"
             style={{ background: "linear-gradient(135deg,#8a7bf0,#6355e6)" }}
           >
             <Icon name="send" size={17} />

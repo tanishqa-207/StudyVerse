@@ -91,33 +91,35 @@ export default function VoiceRecorder({
   if (recordingState === "recording" || recordingState === "paused") {
     const isPaused = recordingState === "paused";
     return (
-      <div className={`glass flex items-center justify-between gap-3 rounded-2xl px-3.5 py-2 text-white ${className}`}>
-        <div className="flex items-center gap-2.5">
+      <div className={`glass flex items-center justify-between gap-2 sm:gap-3 rounded-2xl px-2.5 sm:px-3.5 py-2 text-white ${className}`}>
+        {/* Recording Status & Pulse Indicator */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
           <span
-            className={`h-3 w-3 rounded-full ${
+            className={`h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 rounded-full ${
               isPaused
                 ? "bg-amber-400"
                 : "animate-ping bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]"
             }`}
           />
-          <span className="font-mono text-[14px] font-semibold tracking-wider">
+          <span className="font-mono text-[13px] sm:text-[14px] font-semibold tracking-wider">
             {formatTimer(recordingTime)}
           </span>
-          <span className="text-[12px] text-[var(--text-dim)]">
+          <span className="hidden xs:inline text-[11.5px] sm:text-[12px] text-[var(--text-dim)] truncate">
             {isPaused ? "Paused" : "Recording…"}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Pause / Resume */}
           <button
             type="button"
             onClick={isPaused ? resumeRecording : pauseRecording}
             title={isPaused ? "Resume" : "Pause"}
             aria-label={isPaused ? "Resume recording" : "Pause recording"}
-            className="grid h-8 w-8 place-items-center rounded-xl bg-white/10 text-white transition hover:bg-white/20"
+            className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-white/10 text-white transition hover:bg-white/20"
           >
-            <Icon name={isPaused ? "play" : "pause"} size={16} />
+            <Icon name={isPaused ? "play" : "pause"} size={15} />
           </button>
 
           {/* Stop Recording (triggers preview) */}
@@ -126,9 +128,9 @@ export default function VoiceRecorder({
             onClick={stopRecording}
             title="Done recording"
             aria-label="Done recording"
-            className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-1.5 text-[12.5px] font-semibold text-white transition hover:bg-emerald-500"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-emerald-600 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11.5px] sm:text-[12.5px] font-semibold text-white transition hover:bg-emerald-500"
           >
-            <span className="h-2.5 w-2.5 rounded-sm bg-white" /> Done
+            <span className="h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-sm bg-white" /> Done
           </button>
 
           {/* Delete / Cancel */}
@@ -137,9 +139,9 @@ export default function VoiceRecorder({
             onClick={handleCancel}
             title="Delete recording"
             aria-label="Delete recording"
-            className="grid h-8 w-8 place-items-center rounded-xl bg-red-500/20 text-red-300 transition hover:bg-red-500/40 hover:text-white"
+            className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-red-500/20 text-red-300 transition hover:bg-red-500/40 hover:text-white"
           >
-            <Icon name="trash" size={16} />
+            <Icon name="trash" size={15} />
           </button>
         </div>
       </div>
@@ -149,8 +151,8 @@ export default function VoiceRecorder({
   // Stopped / Preview State
   if (recordingState === "stopped" && audioUrl) {
     return (
-      <div className={`glass flex flex-col gap-2.5 rounded-2xl p-2.5 text-white ${className}`}>
-        <div className="text-[11.5px] font-semibold tracking-wide text-[var(--text-dim)]">
+      <div className={`glass flex flex-col gap-2 sm:gap-2.5 rounded-2xl p-2 sm:p-2.5 text-white ${className}`}>
+        <div className="text-[11px] sm:text-[11.5px] font-semibold tracking-wide text-[var(--text-dim)]">
           Voice Note Preview
         </div>
         <AudioPlayer src={audioUrl} duration={recordingTime} />
@@ -158,17 +160,17 @@ export default function VoiceRecorder({
           <button
             type="button"
             onClick={handleCancel}
-            className="flex items-center gap-1.5 rounded-xl bg-white/8 px-3 py-1.5 text-[12.5px] font-semibold text-red-300 transition hover:bg-red-500/20 hover:text-red-200"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-white/8 px-2.5 sm:px-3 py-1.5 text-[11.5px] sm:text-[12.5px] font-semibold text-red-300 transition hover:bg-red-500/20 hover:text-red-200"
           >
-            <Icon name="trash" size={15} /> Delete
+            <Icon name="trash" size={14} /> Delete
           </button>
 
           <button
             type="button"
             onClick={handleSend}
-            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[var(--violet-bright,#8a7bf0)] to-[var(--violet-dark,#6355e6)] px-4 py-1.5 text-[12.5px] font-semibold text-white transition hover:brightness-110"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-xl bg-gradient-to-r from-[var(--violet-bright,#8a7bf0)] to-[var(--violet-dark,#6355e6)] px-3 sm:px-4 py-1.5 text-[11.5px] sm:text-[12.5px] font-semibold text-white transition hover:brightness-110"
           >
-            <Icon name="send" size={15} /> Send Voice Note
+            <Icon name="send" size={14} /> Send Voice Note
           </button>
         </div>
       </div>

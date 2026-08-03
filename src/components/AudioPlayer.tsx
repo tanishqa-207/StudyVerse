@@ -111,7 +111,7 @@ export default function AudioPlayer({
 
   return (
     <div
-      className={`flex items-center gap-2.5 rounded-2xl bg-white/10 p-2.5 text-white backdrop-blur-md ${className}`}
+      className={`flex items-center gap-2 sm:gap-2.5 rounded-2xl bg-white/10 p-2 sm:p-2.5 text-white backdrop-blur-md max-w-full min-w-0 ${className}`}
       style={{ background: "rgba(255, 255, 255, 0.07)" }}
     >
       <audio
