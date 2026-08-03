@@ -7,7 +7,9 @@ export type NavKey =
   | "rooms"
   | "quests"
   | "memory-forest"
-  | "streak";
+  | "streak"
+  | "calendar"
+  | "analytics";
 
 export interface NavItem {
   key: NavKey;
@@ -22,6 +24,8 @@ export const navItems: NavItem[] = [
   { key: "quests", label: "Winning", icon: "trophy" },
   { key: "memory-forest", label: "Memory Forest", icon: "leaf" },
   { key: "streak", label: "Streak", icon: "flame" },
+  { key: "calendar", label: "Calendar", icon: "calendar" },
+  { key: "analytics", label: "Analytics", icon: "bar-chart" },
 ];
 
 export interface DemoUser {

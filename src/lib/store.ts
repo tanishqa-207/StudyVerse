@@ -78,12 +78,21 @@ export interface Preferences {
   notifications: boolean;
 }
 
+export interface TimetableEntry {
+  id: string;
+  startTime: string;
+  endTime: string;
+  subject: string;
+  location?: string;
+}
+
 export interface Profile {
   id: string;
   username: string;
   avatarId: number; // 0..AVATAR_COUNT-1
   progress: Progress;
   preferences: Preferences;
+  timetable: Record<string, TimetableEntry[]>;
 }
 
 interface PersistShape {
@@ -107,6 +116,7 @@ function makeProfile(username: string, avatarId: number): Profile {
     avatarId,
     progress: { ...defaultProgress },
     preferences: { ...defaultPreferences },
+    timetable: {},
   };
 }
 
@@ -143,8 +153,13 @@ interface AppState extends PersistShape {
 
   completeFocusSession: (minutes: number) => void;
   awardXp: (xp: number, coins?: number) => void;
+  awardGems: (gems: number) => void;
   setDailyGoal: (minutes: number) => void;
   setPreference: <K extends keyof Preferences>(key: K, value: Preferences[K]) => void;
+
+  addTimetableEntry: (date: string, entry: Omit<TimetableEntry, "id">) => void;
+  updateTimetableEntry: (date: string, id: string, entry: Partial<Omit<TimetableEntry, "id">>) => void;
+  deleteTimetableEntry: (date: string, id: string) => void;
 
   /** Claim a reward milestone (once) if its point threshold is reached. */
   claimReward: (id: string) => boolean;
@@ -297,6 +312,11 @@ export const useStore = create<AppState>((set, get) => ({
     void syncProgress(get);
   },
 
+  awardGems: (gems) => {
+    set((s) => mutateActive(s, (p) => ({ ...p, gems: p.gems + gems })));
+    void syncProgress(get);
+  },
+
   setDailyGoal: (minutes) => {
     // Clamp to a sane range (15 min – 12 h) in 5-min steps.
     const clamped = Math.max(15, Math.min(720, Math.round(minutes / 5) * 5));
@@ -308,6 +328,64 @@ export const useStore = create<AppState>((set, get) => ({
     set((s) => {
       const profiles = s.profiles.map((p) =>
         p.id === s.activeId ? { ...p, preferences: { ...p.preferences, [key]: value } } : p,
+      );
+      persist(profiles, s.activeId);
+      return { profiles };
+    });
+  },
+
+  addTimetableEntry: (date, entry) => {
+    set((s) => {
+      const active = activeOf(s);
+      if (!active) return s;
+      const newEntry = { ...entry, id: newId() };
+      const currentEntries = active.timetable?.[date] || [];
+      const profiles = s.profiles.map((p) =>
+        p.id === s.activeId
+          ? { ...p, timetable: { ...(p.timetable || {}), [date]: [...currentEntries, newEntry] } }
+          : p,
+      );
+      persist(profiles, s.activeId);
+      return { profiles };
+    });
+  },
+
+  updateTimetableEntry: (date, id, patch) => {
+    set((s) => {
+      const active = activeOf(s);
+      if (!active) return s;
+      const currentEntries = active.timetable?.[date] || [];
+      const profiles = s.profiles.map((p) =>
+        p.id === s.activeId
+          ? {
+              ...p,
+              timetable: {
+                ...(p.timetable || {}),
+                [date]: currentEntries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+              },
+            }
+          : p,
+      );
+      persist(profiles, s.activeId);
+      return { profiles };
+    });
+  },
+
+  deleteTimetableEntry: (date, id) => {
+    set((s) => {
+      const active = activeOf(s);
+      if (!active) return s;
+      const currentEntries = active.timetable?.[date] || [];
+      const profiles = s.profiles.map((p) =>
+        p.id === s.activeId
+          ? {
+              ...p,
+              timetable: {
+                ...(p.timetable || {}),
+                [date]: currentEntries.filter((e) => e.id !== id),
+              },
+            }
+          : p,
       );
       persist(profiles, s.activeId);
       return { profiles };
@@ -365,11 +443,13 @@ export const useStore = create<AppState>((set, get) => ({
 
 // ---- convenience selectors (stable references) ----
 const activeOf = (s: AppState) => s.profiles.find((p) => p.id === s.activeId);
+const EMPTY_OBJ: Record<string, any[]> = {};
 
 export const useActiveProfile = () => useStore((s) => activeOf(s) ?? null);
 export const useProgress = () => useStore((s) => activeOf(s)?.progress ?? defaultProgress);
 export const useUsername = () => useStore((s) => activeOf(s)?.username ?? "");
 export const useAvatarId = () => useStore((s) => activeOf(s)?.avatarId ?? 0);
+export const useTimetable = () => useStore((s) => activeOf(s)?.timetable ?? EMPTY_OBJ);
 export const useHasProfile = () => useStore((s) => s.activeId != null);
 /** Whether the active profile owns a given unlock id. */
 export const useHasUnlock = (id: string) =>

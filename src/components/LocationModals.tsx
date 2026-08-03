@@ -6,6 +6,9 @@ import Icon from "./Icon";
 import Avatar from "./Avatar";
 import StudyRoom from "./StudyRoom";
 import NotesApp from "./NotesApp";
+import Calendar from "./Calendar";
+import Analytics from "./Analytics";
+import TimetableModal from "./TimetableModal";
 import {
   useStore,
   useProgress,
@@ -342,6 +345,11 @@ function ForestLocked({
   );
 }
 
+const PREMIUM_PACKS = [
+  { id: "pack_coin_1", type: "coin", amount: 2500, price: "₹149" },
+  { id: "pack_gem_1", type: "gem", amount: 100, price: "₹149" },
+];
+
 // ---- Shop — spend coins/gems on real unlocks (section + cosmetics) ----
 function ShopModal() {
   const open = useUI((s) => s.modal === "shop");
@@ -351,6 +359,34 @@ function ShopModal() {
   const setAccent = useStore((s) => s.setAccent);
   const forestOwned = useHasUnlock(MEMORY_FOREST_UNLOCK);
   const p = useProgress();
+  const awardXp = useStore((s) => s.awardXp);
+  const awardGems = useStore((s) => s.awardGems);
+
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "selecting" | "processing" | "success" | "failed">("idle");
+  const [selectedPack, setSelectedPack] = useState<typeof PREMIUM_PACKS[0] | null>(null);
+
+  const handleBuyPack = (pack: typeof PREMIUM_PACKS[0]) => {
+    setSelectedPack(pack);
+    setPaymentStatus("selecting");
+  };
+
+  const handleSimulatePayment = () => {
+    setPaymentStatus("processing");
+    // Simulate network/payment delay
+    setTimeout(() => {
+      // 90% success rate for simulation
+      if (Math.random() > 0.1) {
+        if (selectedPack?.type === "coin") {
+          awardXp(0, selectedPack?.amount);
+        } else if (selectedPack?.type === "gem") {
+          awardGems(selectedPack?.amount);
+        }
+        setPaymentStatus("success");
+      } else {
+        setPaymentStatus("failed");
+      }
+    }, 2000);
+  };
 
   const buyForest = () => {
     if (purchaseUnlock(MEMORY_FOREST_UNLOCK, MEMORY_FOREST_COST)) {
@@ -373,6 +409,85 @@ function ShopModal() {
       subtitle="Spend your coins & gems on sections and themes."
       width={520}
     >
+      <div className="relative">
+      {/* simulated payment overlay */}
+      {paymentStatus !== "idle" && selectedPack && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl bg-[#0a0a0a]/90 p-6 backdrop-blur-md">
+          {paymentStatus === "selecting" && (
+            <div className="w-full max-w-[340px]">
+              <div className="mb-6 text-center">
+                <div className="text-[18px] font-bold text-white">Select Payment Method</div>
+                <div className="mt-1 text-[13px] text-[var(--text-faint)]">
+                  Pay {selectedPack.price} securely
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                {["UPI Apps (Google Pay, PhonePe, Paytm, BHIM)", "UPI ID", "QR Code", "Debit Card", "Credit Card", "Net Banking", "Wallets"].map(method => (
+                  <button
+                    key={method}
+                    onClick={handleSimulatePayment}
+                    className="flex w-full items-center justify-between rounded-xl bg-white/5 p-3 text-left transition hover:bg-white/10"
+                  >
+                    <span className="text-[13px] font-semibold text-white">{method}</span>
+                    <span className="text-[var(--text-faint)] font-bold text-[14px]">›</span>
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setPaymentStatus("idle")}
+                className="mt-4 w-full rounded-xl bg-white/5 py-3 text-[13px] font-semibold text-[var(--text-dim)] transition hover:bg-white/10 hover:text-white"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          {paymentStatus === "processing" && (
+            <>
+              <div 
+                className="mb-4 h-12 w-12 rounded-full border-4 border-[var(--violet-bright)] border-t-transparent animate-spin"
+              />
+              <div className="text-[18px] font-bold text-white">Processing Payment...</div>
+              <div className="mt-2 text-[14px] text-[var(--text-faint)]">Please do not close this window</div>
+            </>
+          )}
+          {paymentStatus === "success" && (
+            <>
+              <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-[var(--green)]/20 text-[var(--green)]">
+                <Icon name="check" size={32} />
+              </div>
+              <div className="text-[18px] font-bold text-white">Payment Successful!</div>
+              <div className="mt-2 text-center text-[14px] text-[var(--text-dim)]">
+                {selectedPack.amount.toLocaleString()} {selectedPack.type === "coin" ? "Coins" : "Gems"} have been added to your balance.
+              </div>
+              <button
+                onClick={() => setPaymentStatus("idle")}
+                className="mt-6 w-full max-w-[200px] rounded-xl px-4 py-2.5 text-[14px] font-semibold text-white transition hover:brightness-110"
+                style={{ background: "linear-gradient(135deg,#2fa06a,#1e7a4e)" }}
+              >
+                Continue
+              </button>
+            </>
+          )}
+          {paymentStatus === "failed" && (
+            <>
+              <div className="mb-4 grid h-16 w-16 place-items-center rounded-full bg-[#ff6a6a]/20 text-[#ff6a6a]">
+                <Icon name="close" size={32} />
+              </div>
+              <div className="text-[18px] font-bold text-white">Payment Failed</div>
+              <div className="mt-2 text-[14px] text-[var(--text-dim)]">Something went wrong. Please try again.</div>
+              <button
+                onClick={() => setPaymentStatus("idle")}
+                className="mt-6 w-full max-w-[200px] rounded-xl bg-white/10 px-4 py-2.5 text-[14px] font-semibold text-white transition hover:bg-white/20"
+              >
+                Close
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
       {/* balance */}
       <div className="glass mb-5 flex items-center justify-center gap-6 rounded-2xl p-3 text-[15px] font-bold">
         <span className="flex items-center gap-2 tabular-nums">
@@ -424,6 +539,40 @@ function ShopModal() {
         {ACCENT_THEMES.map((t) => (
           <AccentCard key={t.id} theme={t} onBuy={buyAccent} onEquip={setAccent} />
         ))}
+      </div>
+
+      {/* purchase currency */}
+      <div className="mb-2.5 mt-6 flex items-center gap-2">
+        <h3 className="text-[13px] font-semibold uppercase tracking-wide text-[var(--text-faint)]">
+          Purchase Currency
+        </h3>
+        <span className="flex items-center gap-1 rounded-md bg-[#ff6a6a]/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#ff6a6a]">
+          <Icon name="lock" size={10} /> Paid
+        </span>
+      </div>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        {PREMIUM_PACKS.map((pack) => (
+          <div key={pack.id} className="glass flex items-center gap-3 rounded-2xl p-3">
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl"
+              style={{ background: pack.type === "coin" ? "rgba(245,150,60,0.16)" : "rgba(86,182,245,0.16)", color: pack.type === "coin" ? "var(--amber)" : "var(--blue)" }}
+            >
+              <Icon name={pack.type === "coin" ? "coin" : "gem"} size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-semibold">{pack.amount.toLocaleString()} {pack.type === "coin" ? "Coins" : "Gems"}</div>
+              <div className="text-[11px] text-[var(--text-faint)]">Instant delivery</div>
+            </div>
+            <button
+              onClick={() => handleBuyPack(pack)}
+              className="shrink-0 rounded-xl px-4 py-1.5 text-[12px] font-semibold text-white transition hover:brightness-110"
+              style={{ background: "linear-gradient(135deg,#8a7bf0,#6355e6)" }}
+            >
+              {pack.price}
+            </button>
+          </div>
+        ))}
+      </div>
       </div>
     </Modal>
   );
@@ -524,6 +673,7 @@ function ManageProfilesModal() {
   const open = useUI((s) => s.modal === "profile");
   const closeModal = useUI((s) => s.closeModal);
   const showToast = useUI((s) => s.showToast);
+  const openModal = useUI((s) => s.openModal);
   const profiles = useStore((s) => s.profiles);
   const activeId = useStore((s) => s.activeId);
   const addProfile = useStore((s) => s.addProfile);
@@ -624,6 +774,16 @@ function ManageProfilesModal() {
             <Icon name="plus" size={18} /> Add Profile
           </button>
 
+          <button
+            onClick={() => {
+              closeModal();
+              setTimeout(() => openModal("timetable"), 150);
+            }}
+            className="mt-2 flex items-center justify-center gap-2 rounded-2xl border border-dashed border-white/20 px-5 py-3 text-[14px] font-semibold text-[var(--text-dim)] transition hover:text-[var(--violet-bright)] hover:border-[var(--violet-bright)]"
+          >
+            <Icon name="calendar" size={18} /> Manage Timetable
+          </button>
+
           <div className="mt-4 border-t border-white/10 pt-5">
             <h3 className="mb-3 text-[11px] font-bold text-[var(--text-faint)] uppercase tracking-wider">
               Preferences (Active Profile)
@@ -638,18 +798,16 @@ function ManageProfilesModal() {
                   const p = profiles.find((x) => x.id === activeId);
                   if (p) setPreference("soundOn", !p.preferences.soundOn);
                 }}
-                className={`relative h-[22px] w-[38px] rounded-full transition-colors ${
-                  profiles.find((x) => x.id === activeId)?.preferences?.soundOn !== false
+                className={`relative h-[22px] w-[38px] rounded-full transition-colors ${profiles.find((x) => x.id === activeId)?.preferences?.soundOn !== false
                     ? "bg-[var(--violet)]"
                     : "bg-white/20"
-                }`}
+                  }`}
               >
                 <div
-                  className={`absolute top-[3px] h-4 w-4 rounded-full bg-white transition-transform ${
-                    profiles.find((x) => x.id === activeId)?.preferences?.soundOn !== false
+                  className={`absolute top-[3px] h-4 w-4 rounded-full bg-white transition-transform ${profiles.find((x) => x.id === activeId)?.preferences?.soundOn !== false
                       ? "translate-x-[19px]"
                       : "translate-x-[3px]"
-                  }`}
+                    }`}
                 />
               </button>
             </div>
@@ -800,6 +958,26 @@ function DeleteConfirm({
   );
 }
 
+function CalendarModal() {
+  const open = useUI((s) => s.modal === "calendar");
+  const closeModal = useUI((s) => s.closeModal);
+  return (
+    <Modal open={open} onClose={closeModal} title="Calendar" subtitle="Plan your study sessions and stay on track." width={720}>
+      <Calendar />
+    </Modal>
+  );
+}
+
+function AnalyticsModal() {
+  const open = useUI((s) => s.modal === "analytics");
+  const closeModal = useUI((s) => s.closeModal);
+  return (
+    <Modal open={open} onClose={closeModal} title="Analytics" subtitle="Deep dive into your progress." width={720}>
+      <Analytics />
+    </Modal>
+  );
+}
+
 export default function LocationModals() {
   return (
     <>
@@ -809,6 +987,9 @@ export default function LocationModals() {
       <ShopModal />
       <StreakModal />
       <ManageProfilesModal />
+      <CalendarModal />
+      <AnalyticsModal />
+      <TimetableModal />
     </>
   );
 }

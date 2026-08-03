@@ -9,6 +9,7 @@ export default function Modal({
   onClose,
   title,
   subtitle,
+  headerAction,
   children,
   width = 460,
 }: {
@@ -16,6 +17,7 @@ export default function Modal({
   onClose: () => void;
   title: string;
   subtitle?: string;
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
   width?: number;
 }) {
@@ -59,6 +61,7 @@ export default function Modal({
                   </p>
                 )}
               </div>
+              {headerAction && <div className="flex items-center gap-3 shrink-0 ml-4">{headerAction}</div>}
               <button
                 onClick={onClose}
                 aria-label="Close"
