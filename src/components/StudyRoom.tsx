@@ -7,6 +7,7 @@ import Avatar from "./Avatar";
 import { useUI } from "@/lib/uiStore";
 import { useRoom } from "@/lib/roomStore";
 import { useActiveProfile } from "@/lib/store";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 const DURATIONS = [15, 25, 50];
 
@@ -398,6 +399,10 @@ function Chat() {
   const [text, setText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+    onTranscript: (speechText) => setText(speechText),
+  });
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
@@ -442,14 +447,36 @@ function Chat() {
           );
         })}
       </div>
-      <div className="mt-2 flex items-end gap-2">
+      <div className="mt-2 flex items-center gap-2">
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="Message…"
-          className="w-full rounded-xl bg-white/8 px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
+          placeholder={isListening ? "Listening… speak now" : "Message…"}
+          className={`w-full rounded-xl bg-white/8 px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none ${
+            isListening ? "ring-2 ring-red-500/70" : ""
+          }`}
         />
+        <button
+          type="button"
+          onClick={() => toggleListening(text)}
+          disabled={!isSupported}
+          title={
+            !isSupported
+              ? "Speech recognition is not supported in your browser"
+              : isListening
+              ? "Stop voice input"
+              : "Voice input"
+          }
+          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
+            isListening
+              ? "animate-pulse bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+              : "bg-white/8 text-[var(--text-dim)] hover:bg-white/15 hover:text-white"
+          }`}
+        >
+          <Icon name="mic" size={17} />
+        </button>
         <button
           onClick={submit}
           disabled={!text.trim()}

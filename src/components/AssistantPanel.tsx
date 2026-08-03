@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Icon from "./Icon";
 import Emblem from "./Emblem";
 import { useAssistant } from "@/lib/assistantStore";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 const QUICK_PROMPTS = [
   "Explain recursion",
@@ -17,6 +18,10 @@ export default function AssistantPanel() {
     useAssistant();
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+    onTranscript: (speechText) => setInput(speechText),
+  });
 
   // Keep the newest message in view as content streams in.
   useEffect(() => {
@@ -171,7 +176,7 @@ export default function AssistantPanel() {
 
           {/* input */}
           <div className="border-t border-white/10 p-3">
-            <div className="glass flex items-end gap-2 rounded-2xl px-3 py-2">
+            <div className={`glass flex items-end gap-2 rounded-2xl px-3 py-2 ${isListening ? "ring-2 ring-red-500/70" : ""}`}>
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -182,9 +187,29 @@ export default function AssistantPanel() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask a question…"
+                placeholder={isListening ? "Listening… speak now" : "Ask a question…"}
                 className="max-h-24 min-h-[24px] w-full resize-none bg-transparent text-[14px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
               />
+              <button
+                type="button"
+                onClick={() => toggleListening(input)}
+                disabled={!isSupported}
+                title={
+                  !isSupported
+                    ? "Speech recognition is not supported in your browser"
+                    : isListening
+                    ? "Stop voice input"
+                    : "Voice input"
+                }
+                aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
+                  isListening
+                    ? "animate-pulse bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+                    : "text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                <Icon name="mic" size={17} />
+              </button>
               <button
                 onClick={submit}
                 disabled={loading || !input.trim()}
