@@ -49,7 +49,7 @@ export default function FloatingTimer() {
       initial={{ opacity: 0, scale: 0.9, y: 20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.9, y: 20 }}
-      className="fixed bottom-6 right-6 z-[100] cursor-grab active:cursor-grabbing"
+      className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[100] cursor-grab active:cursor-grabbing"
     >
       <div 
         className="glass-strong flex items-center gap-3 rounded-full px-5 py-2.5 hover:brightness-110 transition shadow-2xl"

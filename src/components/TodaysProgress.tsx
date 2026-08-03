@@ -7,7 +7,7 @@ import { dailyQuote } from "@/lib/demoData";
 import { useProgress, useStore } from "@/lib/store";
 import { useUI } from "@/lib/uiStore";
 
-function fmt(mins: number) {
+export function fmt(mins: number) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -59,7 +59,7 @@ export default function TodaysProgress() {
       </div>
 
       {/* coins + gems — the Coins tile opens the Shop (coins have real value) */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <StatTile
           icon="coin"
           label="Coins"
@@ -100,19 +100,21 @@ export default function TodaysProgress() {
   );
 }
 
-function LevelHex({ level, size = 40 }: { level: number; size?: number }) {
+function LevelHex({ level, size }: { level: number; size: number }) {
   return (
-    <div className="relative grid place-items-center" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 24 24" width={size} height={size} className="absolute">
-        <defs>
-          <linearGradient id="hex-g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#9a8bff" />
-            <stop offset="100%" stopColor="#6355d6" />
-          </linearGradient>
-        </defs>
-        <path d="M12 2.5 20 7v10l-8 4.5L4 17V7z" fill="url(#hex-g)" />
-      </svg>
-      <span className="relative text-[15px] font-bold text-white">{level}</span>
+    <div
+      className="grid shrink-0 place-items-center"
+      style={{
+        width: size,
+        height: size,
+        clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+        background: "linear-gradient(135deg, var(--violet-bright), var(--violet-dark))",
+        boxShadow: "inset 0 2px 4px rgba(255,255,255,0.4)",
+      }}
+    >
+      <span className="text-[15px] font-black text-white" style={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}>
+        {level}
+      </span>
     </div>
   );
 }
@@ -125,7 +127,7 @@ function StatTile({
   onClick,
   hint,
 }: {
-  icon: "coin" | "gem";
+  icon: import("./Icon").IconName;
   label: string;
   value: number;
   color: string;
@@ -136,17 +138,10 @@ function StatTile({
   return (
     <Tag
       onClick={onClick}
-      className={`glass hover-lift group relative rounded-2xl p-4 text-left ${
-        onClick ? "cursor-pointer" : ""
-      }`}
+      className={`glass group relative flex flex-col gap-1 rounded-2xl p-4 text-left ${onClick ? "transition hover:brightness-110 active:scale-95" : ""}`}
     >
-      <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-[var(--text-dim)]">
-        <span
-          className="grid h-7 w-7 place-items-center rounded-lg"
-          style={{ background: `${color}22`, color, boxShadow: `0 0 14px -6px ${color}` }}
-        >
-          <Icon name={icon} size={16} />
-        </span>
+      <div className="flex items-center gap-2 text-[13px] font-medium text-[var(--text-dim)]">
+        <Icon name={icon} size={16} style={{ color }} />
         {label}
       </div>
       <div className="text-[26px] font-bold tabular-nums leading-none">{value.toLocaleString()}</div>
@@ -163,7 +158,7 @@ function StatTile({
 
 // Editable Daily Goal — click the pencil to adjust in 5-minute steps; the value
 // is saved to the store (local storage) and best-effort synced to Supabase.
-function DailyGoalRow({ goalMinutes }: { goalMinutes: number }) {
+export function DailyGoalRow({ goalMinutes }: { goalMinutes: number }) {
   const setDailyGoal = useStore((s) => s.setDailyGoal);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(goalMinutes);

@@ -10,17 +10,17 @@ export default function Analytics() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-[20px] font-bold text-white">Your Progress</h2>
-          <p className="text-[13px] text-[var(--text-dim)]">Track your study sessions and XP</p>
+          <h2 className="text-[18px] sm:text-[20px] font-bold text-white">Your Progress</h2>
+          <p className="text-[12px] sm:text-[13px] text-[var(--text-dim)]">Track your study sessions and XP</p>
         </div>
-        <div className="flex bg-white/10 rounded-lg p-1">
+        <div className="flex bg-white/10 rounded-lg p-1 self-start sm:self-auto">
           {(["week", "month", "year"] as const).map(f => (
             <button 
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-3 py-1 text-[12px] font-semibold rounded-md transition ${filter === f ? 'bg-[var(--violet)] text-white' : 'text-[var(--text-faint)] hover:text-white'}`}
+              className={`px-2.5 sm:px-3 py-1 text-[11.5px] sm:text-[12px] font-semibold rounded-md transition ${filter === f ? 'bg-[var(--violet)] text-white' : 'text-[var(--text-faint)] hover:text-white'}`}
             >
               {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
@@ -28,22 +28,22 @@ export default function Analytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="glass flex flex-col p-4 rounded-2xl">
-          <span className="text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="flame" size={14} className="text-[var(--amber)]" /> Current Streak</span>
-          <span className="text-[24px] font-bold text-white">{p.streakDays} Days</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="glass flex flex-col p-3.5 sm:p-4 rounded-2xl">
+          <span className="text-[12.5px] sm:text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="flame" size={14} className="text-[var(--amber)]" /> Current Streak</span>
+          <span className="text-[20px] sm:text-[24px] font-bold text-white">{p.streakDays} Days</span>
         </div>
-        <div className="glass flex flex-col p-4 rounded-2xl">
-          <span className="text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="star" size={14} className="text-[var(--violet-bright)]" /> Total XP Earned</span>
-          <span className="text-[24px] font-bold text-white">{p.points.toLocaleString()}</span>
+        <div className="glass flex flex-col p-3.5 sm:p-4 rounded-2xl">
+          <span className="text-[12.5px] sm:text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="star" size={14} className="text-[var(--violet-bright)]" /> Total XP Earned</span>
+          <span className="text-[20px] sm:text-[24px] font-bold text-white">{p.points.toLocaleString()}</span>
         </div>
-        <div className="glass flex flex-col p-4 rounded-2xl">
-          <span className="text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="clock" size={14} className="text-[var(--blue)]" /> Study Time Today</span>
-          <span className="text-[24px] font-bold text-white">{Math.floor(p.studyMinutesToday / 60)}h {p.studyMinutesToday % 60}m</span>
+        <div className="glass flex flex-col p-3.5 sm:p-4 rounded-2xl">
+          <span className="text-[12.5px] sm:text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="clock" size={14} className="text-[var(--blue)]" /> Study Time Today</span>
+          <span className="text-[20px] sm:text-[24px] font-bold text-white">{Math.floor(p.studyMinutesToday / 60)}h {p.studyMinutesToday % 60}m</span>
         </div>
-        <div className="glass flex flex-col p-4 rounded-2xl">
-          <span className="text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="check" size={14} className="text-[var(--green)]" /> Goals Completed</span>
-          <span className="text-[24px] font-bold text-white">{Math.floor(p.streakDays * 1.5)}</span>
+        <div className="glass flex flex-col p-3.5 sm:p-4 rounded-2xl">
+          <span className="text-[12.5px] sm:text-[13px] text-[var(--text-dim)] font-medium mb-1 flex items-center gap-2"><Icon name="check" size={14} className="text-[var(--green)]" /> Goals Completed</span>
+          <span className="text-[20px] sm:text-[24px] font-bold text-white">{Math.floor(p.streakDays * 1.5)}</span>
         </div>
       </div>
 

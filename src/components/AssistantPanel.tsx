@@ -45,7 +45,7 @@ export default function AssistantPanel() {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 28, scale: 0.98 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="glass-strong fixed inset-x-2 bottom-2 z-[55] flex h-[78vh] max-h-[560px] flex-col overflow-hidden rounded-[24px] sm:rounded-[26px] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[560px] sm:max-h-[calc(100vh-3rem)] sm:w-[404px]"
+          className="glass-strong fixed inset-x-0 bottom-0 z-[55] flex h-[90vh] w-full flex-col overflow-hidden rounded-t-[28px] sm:rounded-[26px] sm:inset-x-auto sm:bottom-6 sm:right-6 sm:h-[560px] sm:max-h-[calc(100vh-3rem)] sm:w-[404px]"
           style={{ boxShadow: "0 30px 80px -24px rgba(0,0,0,0.7), 0 0 40px -18px var(--glow-violet)" }}
         >
           {/* neon top accent */}

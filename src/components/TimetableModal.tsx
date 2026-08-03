@@ -70,10 +70,10 @@ export default function TimetableModal() {
       width={720}
       headerAction={datePicker}
     >
-      <div className="flex gap-5 min-h-[360px]">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 min-h-[360px]">
         
         {/* Form Panel (Left) */}
-        <div className="glass flex flex-col gap-4 rounded-2xl p-5 border border-white/5 w-[300px] shrink-0">
+        <div className="glass flex flex-col gap-3.5 sm:gap-4 rounded-2xl p-4 sm:p-5 border border-white/5 w-full sm:w-[300px] shrink-0">
           <div className="text-[13px] font-bold text-[var(--violet-bright)] uppercase tracking-wider">
             {editingId ? "Edit Entry" : "New Entry"}
           </div>

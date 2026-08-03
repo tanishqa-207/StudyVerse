@@ -23,9 +23,18 @@ export default function Modal({
 }) {
   useEffect(() => {
     if (!open) return;
+    
+    // Prevent body scroll when modal is open
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = originalOverflow;
+    };
   }, [open, onClose]);
 
   return (
@@ -49,10 +58,10 @@ export default function Modal({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 280, damping: 26 }}
-            className="glass-strong relative z-10 max-h-[88vh] sm:max-h-[86vh] max-w-[calc(100vw-1.25rem)] overflow-y-auto rounded-[24px] sm:rounded-[28px] p-4 sm:p-6 scroll-slim"
-            style={{ width: "100%", maxWidth: width }}
+            className="glass-strong relative z-10 flex flex-col max-h-[90vh] w-[95vw] sm:max-h-[86vh] sm:w-[calc(100vw-1.25rem)] overflow-hidden rounded-[24px] sm:rounded-[28px]"
+            style={{ maxWidth: width }}
           >
-            <div className="mb-5 flex items-start justify-between gap-4">
+            <div className="shrink-0 flex items-start justify-between gap-4 p-4 sm:p-6 pb-2 sm:pb-4">
               <div>
                 <h2 className="text-[22px] font-bold leading-tight">{title}</h2>
                 {subtitle && (
@@ -70,7 +79,9 @@ export default function Modal({
                 <Icon name="close" size={18} />
               </button>
             </div>
-            {children}
+            <div className="flex-1 overflow-y-auto scroll-slim p-4 sm:p-6 pt-2 sm:pt-2">
+              {children}
+            </div>
           </motion.div>
         </motion.div>
       )}
