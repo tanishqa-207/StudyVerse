@@ -52,14 +52,14 @@ export default function Onboarding() {
         initial={{ opacity: 0, y: 16, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 220, damping: 24 }}
-        className="glass-strong relative z-10 w-full max-w-[540px] rounded-[32px] p-8"
+        className="glass-strong relative z-10 w-full max-w-[540px] rounded-[24px] sm:rounded-[32px] p-4 sm:p-8 max-h-[92vh] overflow-y-auto scroll-slim"
       >
-        <div className="mb-6 flex flex-col items-center text-center">
-          <Emblem size={64} glow />
-          <h1 className="mt-4 text-[28px] font-bold tracking-tight">
+        <div className="mb-4 sm:mb-6 flex flex-col items-center text-center">
+          <Emblem size={52} glow />
+          <h1 className="mt-3 sm:mt-4 text-[22px] sm:text-[28px] font-bold tracking-tight">
             Welcome to StudyVerse
           </h1>
-          <p className="mt-1 text-[14px] text-[var(--text-dim)]">
+          <p className="mt-1 text-[13px] sm:text-[14px] text-[var(--text-dim)]">
             Pick a name and an avatar to start leveling up.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function Onboarding() {
           Username
         </label>
         <div
-          className={`glass mb-1 flex h-13 items-center gap-3 rounded-2xl px-4 py-3 transition ${
+          className={`glass mb-1 flex h-12 sm:h-13 items-center gap-3 rounded-2xl px-4 py-3 transition ${
             touched && !valid ? "ring-1 ring-[#ff7a7a]" : ""
           }`}
         >
@@ -81,10 +81,10 @@ export default function Onboarding() {
             onChange={(e) => setUsername(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submit()}
             placeholder="e.g. Nova"
-            className="w-full bg-transparent text-[16px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
+            className="w-full bg-transparent text-[15px] sm:text-[16px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
           />
         </div>
-        <div className="mb-5 h-4 text-[12px] text-[#ff9a9a]">
+        <div className="mb-4 sm:mb-5 h-4 text-[12px] text-[#ff9a9a]">
           {touched && !valid ? "Please enter at least 2 characters." : ""}
         </div>
 
@@ -92,7 +92,7 @@ export default function Onboarding() {
         <label className="mb-3 block text-[13px] font-medium text-[var(--text-dim)]">
           Choose your avatar
         </label>
-        <div className="mb-7 grid grid-cols-6 gap-3">
+        <div className="mb-5 sm:mb-7 grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3">
           {Array.from({ length: AVATAR_COUNT }).map((_, i) => {
             const selected = i === avatarId;
             return (
@@ -108,7 +108,7 @@ export default function Onboarding() {
                     : "0 0 0 1px rgba(255,255,255,0.08)",
                 }}
               >
-                <Avatar variant={i} size={52} ring={false} />
+                <Avatar variant={i} size={44} ring={false} />
                 {selected && (
                   <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-[var(--violet)] text-white ring-2 ring-[#0b1030]">
                     <Icon name="chevron-right" size={12} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Icon, { IconName } from "./Icon";
 import Emblem from "./Emblem";
@@ -44,6 +45,19 @@ export default function Sidebar() {
   const closeModal = useUI((s) => s.closeModal);
   const sidebarOpen = useUI((s) => s.sidebarOpen);
   const closeSidebar = useUI((s) => s.closeSidebar);
+  const toggleSidebar = useUI((s) => s.toggleSidebar);
+
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
 
   // The active tab always reflects reality: whatever panel is open, else Home.
   const activeKey: NavKey = (modal && MODAL_NAV[modal]) || "home";
@@ -59,6 +73,7 @@ export default function Sidebar() {
     }
     if (target) openModal(target);
     else closeModal();
+    closeSidebar();
   };
 
   return (
@@ -71,19 +86,27 @@ export default function Sidebar() {
         />
       )}
       <aside
-        className={`scroll-slim fixed inset-y-0 left-0 z-40 flex h-full w-[240px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#0d0b2e]/95 px-4 py-6 backdrop-blur-2xl transition-transform duration-300 md:static md:w-[248px] md:translate-x-0 md:bg-[#0d0b2e]/72 md:px-5 ${
+        className={`scroll-slim fixed inset-y-0 left-0 z-40 flex h-full w-[260px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#0d0b2e]/95 px-4 py-6 backdrop-blur-2xl transition-transform duration-300 md:static md:w-[248px] md:translate-x-0 md:bg-[#0d0b2e]/72 md:px-5 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-      {/* brand */}
-      <div className="mb-9 flex items-center gap-3 px-1">
-        <Emblem size={42} />
-        <div className="leading-tight">
-          <div className="text-[19px] font-bold tracking-tight">StudyVerse</div>
-          <div className="text-[11px] text-[var(--text-faint)]">
-            Level Up Together.
+      {/* brand & close */}
+      <div className="mb-9 flex items-center justify-between px-1">
+        <button className="flex items-center gap-3 text-left" onClick={toggleSidebar}>
+          <Emblem size={42} />
+          <div className="leading-tight">
+            <div className="text-[19px] font-bold tracking-tight">StudyVerse</div>
+            <div className="text-[11px] text-[var(--text-faint)]">
+              Level Up Together.
+            </div>
           </div>
-        </div>
+        </button>
+        <button 
+          className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white md:hidden hover:bg-white/20 transition"
+          onClick={closeSidebar}
+        >
+          <Icon name="close" size={16} />
+        </button>
       </div>
 
       {/* nav */}

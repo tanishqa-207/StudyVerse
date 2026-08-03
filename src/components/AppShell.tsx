@@ -11,6 +11,7 @@ import FocusSessionModal from "./FocusSessionModal";
 import LocationModals from "./LocationModals";
 import MemoryForestPremium from "./MemoryForestPremium";
 import AssistantPanel from "./AssistantPanel";
+import MobileDashboard from "./MobileDashboard";
 import FloatingTimer from "./FloatingTimer";
 import Cloud from "./Cloud";
 import { useStore, useHasProfile, useProgress } from "@/lib/store";
@@ -70,7 +71,7 @@ export default function AppShell() {
   }
 
   return (
-    <div className="relative flex h-screen w-screen max-w-full overflow-hidden">
+    <div className="relative flex h-[100dvh] w-screen max-w-full overflow-hidden">
       {/* full-viewport twilight sky: drifting warm clouds + volumetric fog */}
       <SkyBackdrop />
 
@@ -81,8 +82,14 @@ export default function AppShell() {
           <div className="relative z-10 flex min-h-0 flex-1 flex-col">
             <TopBar />
 
-            <div className="scroll-slim flex min-h-0 flex-1 flex-col gap-4 sm:gap-5 overflow-y-auto px-3 sm:px-5 pb-4 sm:pb-6 pt-3 sm:pt-5 xl:flex-row xl:overflow-visible xl:px-7">
-              <div className="min-h-[360px] sm:min-h-[420px] min-w-0 flex-1 xl:min-h-0">
+            {/* MOBILE LAYOUT (< 768px) */}
+            <div className="scroll-slim flex-1 overflow-y-auto md:hidden">
+              <MobileDashboard />
+            </div>
+
+            {/* DESKTOP/TABLET LAYOUT (>= 768px) */}
+            <div className="scroll-slim hidden md:flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-5 xl:flex-row xl:overflow-visible xl:px-7">
+              <div className="min-h-[420px] min-w-0 flex-1 xl:min-h-0">
                 <IsometricMap />
               </div>
               <TodaysProgress />

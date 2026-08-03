@@ -30,20 +30,20 @@ export default function Calendar() {
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={prevMonth} className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition"><Icon name="chevron-left" size={16} /></button>
-          <span className="text-[18px] font-bold w-40 text-center">{monthName}</span>
-          <button onClick={nextMonth} className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition"><Icon name="chevron-right" size={16} /></button>
+    <div className="flex h-full flex-col min-w-0">
+      <div className="mb-3 sm:mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <button onClick={prevMonth} className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition"><Icon name="chevron-left" size={16} /></button>
+          <span className="text-[15px] sm:text-[18px] font-bold w-32 sm:w-40 text-center">{monthName}</span>
+          <button onClick={nextMonth} className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-lg bg-white/10 hover:bg-white/20 transition"><Icon name="chevron-right" size={16} /></button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-center text-[12px] font-bold text-[var(--text-dim)] mb-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-[12px] font-bold text-[var(--text-dim)] mb-1.5 sm:mb-2">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => <div key={d}>{d}</div>)}
       </div>
 
-      <div className="grid grid-cols-7 gap-2 flex-1 auto-rows-fr">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 flex-1 auto-rows-fr">
         {blanks.map(b => (
           <div key={`b-${b}`} className="rounded-xl bg-white/5 opacity-30" />
         ))}
@@ -63,12 +63,12 @@ export default function Calendar() {
                   }));
                 }
               }}
-              className="rounded-xl bg-white/10 p-2 flex flex-col items-start justify-start text-[14px] font-semibold text-white transition hover:bg-white/15 cursor-pointer relative overflow-hidden"
+              className="rounded-xl bg-white/10 p-1 sm:p-2 flex flex-col items-start justify-start text-[12px] sm:text-[14px] font-semibold text-white transition hover:bg-white/15 cursor-pointer relative overflow-hidden min-h-[44px] sm:min-h-[60px]"
             >
-              <span className="mb-1">{d}</span>
-              <div className="flex flex-col gap-1 w-full flex-1 overflow-y-auto custom-scroll">
+              <span className="mb-0.5 sm:mb-1">{d}</span>
+              <div className="flex flex-col gap-0.5 sm:gap-1 w-full flex-1 overflow-y-auto custom-scroll">
                 {dayEvents.map((ev, i) => (
-                  <div key={i} className="text-[9px] bg-[var(--violet)] text-white px-1.5 py-0.5 rounded-md truncate w-full" title={ev}>
+                  <div key={i} className="text-[8px] sm:text-[9px] bg-[var(--violet)] text-white px-1 sm:px-1.5 py-0.5 rounded-md truncate w-full" title={ev}>
                     {ev}
                   </div>
                 ))}

@@ -48,7 +48,7 @@ export default function MemoryForestPremium() {
             exit={{ opacity: 0, scale: 0.92, y: 20 }}
             transition={{ type: "spring", stiffness: 280, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
-            className="glass-strong relative w-[90%] max-w-[500px] overflow-hidden rounded-[32px] p-6 sm:p-8"
+            className="glass-strong relative w-[90%] max-w-[500px] max-h-[90vh] overflow-y-auto scroll-slim rounded-[24px] sm:rounded-[32px] p-5 sm:p-8"
             style={{ boxShadow: "0 40px 100px -20px rgba(0,0,0,0.8), 0 0 60px -12px var(--glow-violet)" }}
           >
             {/* neon top accent */}
