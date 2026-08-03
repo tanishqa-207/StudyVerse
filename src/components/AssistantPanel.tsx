@@ -5,6 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import Icon from "./Icon";
 import Emblem from "./Emblem";
 import { useAssistant } from "@/lib/assistantStore";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import VoiceRecorder from "./VoiceRecorder";
+import AudioPlayer from "./AudioPlayer";
 
 const QUICK_PROMPTS = [
   "Explain recursion",
@@ -16,7 +19,12 @@ export default function AssistantPanel() {
   const { open, loading, streaming, messages, error, closePanel, reset, send, retry } =
     useAssistant();
   const [input, setInput] = useState("");
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+    onTranscript: (speechText) => setInput(speechText),
+  });
 
   // Keep the newest message in view as content streams in.
   useEffect(() => {
@@ -30,6 +38,16 @@ export default function AssistantPanel() {
     if (!text.trim() || loading) return;
     setInput("");
     send(text);
+  };
+
+  const handleSendVoiceNote = (blob: Blob, url: string, duration: number) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      send(`[voice-note:${base64data}|${duration}]`);
+      setShowVoiceRecorder(false);
+    };
   };
 
   return (
@@ -107,6 +125,20 @@ export default function AssistantPanel() {
             {messages.map((m, i) => {
               const isUser = m.role === "user";
               const isLast = i === messages.length - 1;
+              const isVN = m.content.startsWith("[voice-note:");
+              let vnUrl = "";
+              let vnDuration = 0;
+              if (isVN) {
+                const raw = m.content.slice(12, -1);
+                const pipeIdx = raw.lastIndexOf("|");
+                if (pipeIdx !== -1) {
+                  vnUrl = raw.slice(0, pipeIdx);
+                  vnDuration = parseFloat(raw.slice(pipeIdx + 1)) || 0;
+                } else {
+                  vnUrl = raw;
+                }
+              }
+
               return (
                 <motion.div
                   key={i}
@@ -133,7 +165,11 @@ export default function AssistantPanel() {
                           }
                     }
                   >
-                    <MessageContent text={m.content} />
+                    {isVN ? (
+                      <AudioPlayer src={vnUrl} duration={vnDuration} className="min-w-[210px]" />
+                    ) : (
+                      <MessageContent text={m.content} />
+                    )}
                     {streaming && isLast && !isUser && (
                       <span className="ml-0.5 inline-block h-3.5 w-[2px] translate-y-0.5 animate-pulse bg-[var(--violet-bright)] align-middle" />
                     )}
@@ -171,30 +207,72 @@ export default function AssistantPanel() {
 
           {/* input */}
           <div className="border-t border-white/10 p-3">
-            <div className="glass flex items-end gap-2 rounded-2xl px-3 py-2">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submit();
-                  }
-                }}
-                rows={1}
-                placeholder="Ask a question…"
-                className="max-h-24 min-h-[24px] w-full resize-none bg-transparent text-[14px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
+            {showVoiceRecorder ? (
+              <VoiceRecorder
+                onSend={handleSendVoiceNote}
+                onCancel={() => setShowVoiceRecorder(false)}
               />
-              <button
-                onClick={submit}
-                disabled={loading || !input.trim()}
-                aria-label="Send"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white transition hover:brightness-110 disabled:opacity-40"
-                style={{ background: "linear-gradient(135deg, var(--violet-bright), var(--violet-dark))" }}
-              >
-                <Icon name="send" size={17} />
-              </button>
-            </div>
+            ) : (
+              <div className={`glass flex items-end gap-2 rounded-2xl px-3 py-2 ${isListening ? "ring-2 ring-red-500/70" : ""}`}>
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      submit();
+                    }
+                  }}
+                  rows={1}
+                  placeholder={isListening ? "Listening… speak now" : "Ask a question…"}
+                  className="max-h-24 min-h-[24px] w-full resize-none bg-transparent text-[14px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
+                />
+                {/* Button 1: Speech to Text (Transcription) */}
+                <button
+                  type="button"
+                  onClick={() => toggleListening(input)}
+                  disabled={!isSupported}
+                  title={
+                    !isSupported
+                      ? "Speech recognition is not supported in your browser"
+                      : isListening
+                      ? "Stop voice input"
+                      : "Voice input"
+                  }
+                  aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
+                    isListening
+                      ? "animate-pulse bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+                      : "text-[var(--text-dim)] hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <Icon name="mic" size={17} />
+                </button>
+                {/* Button 2: Voice Note Recording (Audio clip) */}
+                <button
+                  type="button"
+                  onClick={() => setShowVoiceRecorder(true)}
+                  title="Record Voice Note"
+                  aria-label="Record Voice Note"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-[var(--violet-bright,#8a7bf0)] transition hover:bg-white/10 hover:text-white"
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="22" />
+                  </svg>
+                </button>
+                <button
+                  onClick={submit}
+                  disabled={loading || !input.trim()}
+                  aria-label="Send"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white transition hover:brightness-110 disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, var(--violet-bright), var(--violet-dark))" }}
+                >
+                  <Icon name="send" size={17} />
+                </button>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

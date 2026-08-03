@@ -7,6 +7,9 @@ import Avatar from "./Avatar";
 import { useUI } from "@/lib/uiStore";
 import { useRoom } from "@/lib/roomStore";
 import { useActiveProfile } from "@/lib/store";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import VoiceRecorder from "./VoiceRecorder";
+import AudioPlayer from "./AudioPlayer";
 import { useTimer } from "@/lib/timerStore";
 
 const DURATIONS = [15, 25, 50];
@@ -449,7 +452,12 @@ function Chat() {
   const sendChat = useRoom((s) => s.sendChat);
   const me = useActiveProfile();
   const [text, setText] = useState("");
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+    onTranscript: (speechText) => setText(speechText),
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -459,6 +467,16 @@ function Chat() {
     if (!text.trim()) return;
     sendChat(text);
     setText("");
+  };
+
+  const handleSendVoiceNote = (blob: Blob, url: string, duration: number) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = () => {
+      const base64data = reader.result as string;
+      sendChat(`[voice-note:${base64data}|${duration}]`);
+      setShowVoiceRecorder(false);
+    };
   };
 
   return (
@@ -474,45 +492,111 @@ function Chat() {
         )}
         {messages.map((m) => {
           const mine = m.clientId === me?.id;
+          const isVN = m.body.startsWith("[voice-note:");
+          let vnUrl = "";
+          let vnDuration = 0;
+          if (isVN) {
+            const raw = m.body.slice(12, -1);
+            const pipeIdx = raw.lastIndexOf("|");
+            if (pipeIdx !== -1) {
+              vnUrl = raw.slice(0, pipeIdx);
+              vnDuration = parseFloat(raw.slice(pipeIdx + 1)) || 0;
+            } else {
+              vnUrl = raw;
+            }
+          }
+
           return (
             <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div className="max-w-[85%]">
                 {!mine && (
                   <div className="mb-0.5 px-1 text-[10.5px] text-[var(--text-faint)]">{m.name}</div>
                 )}
-                <div
-                  className="whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed"
-                  style={
-                    mine
-                      ? { background: "linear-gradient(135deg,#8a7bf0,#6355e6)", color: "#fff" }
-                      : { background: "rgba(255,255,255,0.08)", color: "var(--text)" }
-                  }
-                >
-                  {m.body}
-                </div>
+                {isVN ? (
+                  <div className="rounded-2xl p-1">
+                    <AudioPlayer src={vnUrl} duration={vnDuration} className="min-w-[210px]" />
+                  </div>
+                ) : (
+                  <div
+                    className="whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-[13px] leading-relaxed"
+                    style={
+                      mine
+                        ? { background: "linear-gradient(135deg,#8a7bf0,#6355e6)", color: "#fff" }
+                        : { background: "rgba(255,255,255,0.08)", color: "var(--text)" }
+                    }
+                  >
+                    {m.body}
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
-      <div className="mt-2 flex items-end gap-2">
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="Message…"
-          className="w-full rounded-xl bg-white/8 px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none"
+
+      {showVoiceRecorder ? (
+        <VoiceRecorder
+          onSend={handleSendVoiceNote}
+          onCancel={() => setShowVoiceRecorder(false)}
+          className="mt-2"
         />
-        <button
-          onClick={submit}
-          disabled={!text.trim()}
-          aria-label="Send message"
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white transition disabled:opacity-40"
-          style={{ background: "linear-gradient(135deg,#8a7bf0,#6355e6)" }}
-        >
-          <Icon name="send" size={17} />
-        </button>
-      </div>
+      ) : (
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && submit()}
+            placeholder={isListening ? "Listening… speak now" : "Message…"}
+            className={`w-full rounded-xl bg-white/8 px-3.5 py-2.5 text-[13.5px] text-white placeholder:text-[var(--text-faint)] focus:outline-none ${
+              isListening ? "ring-2 ring-red-500/70" : ""
+            }`}
+          />
+          {/* Button 1: Speech to Text (Speech Recognition) - UNCHANGED */}
+          <button
+            type="button"
+            onClick={() => toggleListening(text)}
+            disabled={!isSupported}
+            title={
+              !isSupported
+                ? "Speech recognition is not supported in your browser"
+                : isListening
+                ? "Stop voice input"
+                : "Voice input"
+            }
+            aria-label={isListening ? "Stop voice input" : "Start voice input"}
+            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition disabled:opacity-40 ${
+              isListening
+                ? "animate-pulse bg-red-500 text-white shadow-[0_0_12px_rgba(239,68,68,0.6)]"
+                : "bg-white/8 text-[var(--text-dim)] hover:bg-white/15 hover:text-white"
+            }`}
+          >
+            <Icon name="mic" size={17} />
+          </button>
+          {/* Button 2: Second microphone button dedicated for Voice Notes */}
+          <button
+            type="button"
+            onClick={() => setShowVoiceRecorder(true)}
+            title="Record Voice Note"
+            aria-label="Record Voice Note"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/8 text-[var(--violet-bright,#8a7bf0)] transition hover:bg-white/15 hover:text-white"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="22" />
+            </svg>
+          </button>
+          <button
+            onClick={submit}
+            disabled={!text.trim()}
+            aria-label="Send message"
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white transition disabled:opacity-40"
+            style={{ background: "linear-gradient(135deg,#8a7bf0,#6355e6)" }}
+          >
+            <Icon name="send" size={17} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
