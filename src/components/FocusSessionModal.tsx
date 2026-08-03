@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import Icon from "./Icon";
 import { useStore } from "@/lib/store";
@@ -55,7 +55,7 @@ export default function FocusSessionModal() {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [targetEndTime, originalDurationMins, minutes, open]); // open added so it closes modal if open
+  }, [targetEndTime, originalDurationMins, minutes, open, closeModal, completeFocusSession, showToast, stopTimer]); // open added so it closes modal if open
 
   const pick = (m: number) => {
     if (targetEndTime) return; // running

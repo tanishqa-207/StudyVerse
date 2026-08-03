@@ -42,6 +42,8 @@ export default function Sidebar() {
   const modal = useUI((s) => s.modal);
   const openModal = useUI((s) => s.openModal);
   const closeModal = useUI((s) => s.closeModal);
+  const sidebarOpen = useUI((s) => s.sidebarOpen);
+  const closeSidebar = useUI((s) => s.closeSidebar);
 
   // The active tab always reflects reality: whatever panel is open, else Home.
   const activeKey: NavKey = (modal && MODAL_NAV[modal]) || "home";
@@ -60,7 +62,19 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="scroll-slim relative flex h-full w-[248px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#0d0b2e]/72 px-5 py-6 backdrop-blur-2xl">
+    <>
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={closeSidebar}
+        />
+      )}
+      <aside
+        className={`scroll-slim fixed inset-y-0 left-0 z-40 flex h-full w-[240px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#0d0b2e]/95 px-4 py-6 backdrop-blur-2xl transition-transform duration-300 md:static md:w-[248px] md:translate-x-0 md:bg-[#0d0b2e]/72 md:px-5 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
       {/* brand */}
       <div className="mb-9 flex items-center gap-3 px-1">
         <Emblem size={42} />
@@ -141,6 +155,7 @@ export default function Sidebar() {
         <MusicPlayer className="relative z-20" />
       </div>
     </aside>
+    </>
   );
 }
 

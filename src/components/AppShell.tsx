@@ -70,19 +70,19 @@ export default function AppShell() {
   }
 
   return (
-    <div className="relative flex h-screen w-screen overflow-hidden">
+    <div className="relative flex h-screen w-screen max-w-full overflow-hidden">
       {/* full-viewport twilight sky: drifting warm clouds + volumetric fog */}
       <SkyBackdrop />
 
-      <div className="relative z-10 flex h-full w-full">
+      <div className="relative z-10 flex h-full w-full max-w-full">
         <Sidebar />
 
-        <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-x-hidden">
           <div className="relative z-10 flex min-h-0 flex-1 flex-col">
             <TopBar />
 
-            <div className="scroll-slim flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-5 xl:flex-row xl:overflow-visible xl:px-7">
-              <div className="min-h-[420px] min-w-0 flex-1 xl:min-h-0">
+            <div className="scroll-slim flex min-h-0 flex-1 flex-col gap-4 sm:gap-5 overflow-y-auto px-3 sm:px-5 pb-4 sm:pb-6 pt-3 sm:pt-5 xl:flex-row xl:overflow-visible xl:px-7">
+              <div className="min-h-[360px] sm:min-h-[420px] min-w-0 flex-1 xl:min-h-0">
                 <IsometricMap />
               </div>
               <TodaysProgress />
